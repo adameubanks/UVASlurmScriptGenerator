@@ -263,6 +263,24 @@ uvaScriptGen.prototype.createForm = function(doc) {
 		}
 		table.appendChild(this.returnNewRow("uva_sg_input_features", "Features: ", features_span));
 	}
+	
+	this.inputs.features = [];
+	if(this.settings.features.show) {
+			var dropdownMenu = document.querySelector('.dropdown-menu');
+			for(var i in this.settings.features.names) {
+					var new_checkbox = this.newCheckbox({checked:0});
+					new_checkbox.feature_name = this.settings.features.names[i];
+					this.inputs.features.push(new_checkbox);
+					var label = document.createElement('label');
+					label.textContent = this.settings.features.names[i];
+					label.insertBefore(new_checkbox, label.firstChild);
+					dropdownMenu.appendChild(label);
+			}
+	}
+
+	document.querySelector('.dropdown-button').addEventListener('click', function() {
+			document.querySelector('.dropdown-menu').classList.toggle('show');
+	});
 
 	this.inputs.partitions = [];
 	if(this.settings.partitions.show) {
