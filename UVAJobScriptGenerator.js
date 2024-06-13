@@ -36,7 +36,7 @@ TODO:
 
 
 
-var BYUScriptGen = function(div) {
+var uvaScriptGen = function(div) {
 	this.values = {};
 	this.containerDiv = div;
 	this.inputs = {};
@@ -61,7 +61,7 @@ var BYUScriptGen = function(div) {
 	return this;
 };
 
-BYUScriptGen.prototype.returnNewRow = function (rowid, left, right) {
+uvaScriptGen.prototype.returnNewRow = function (rowid, left, right) {
 	var l, r, tr;
 	l = document.createElement("td");
 	r = document.createElement("td");
@@ -76,7 +76,7 @@ BYUScriptGen.prototype.returnNewRow = function (rowid, left, right) {
 	return tr;
 }
 
-BYUScriptGen.prototype.newCheckbox = function(args) {
+uvaScriptGen.prototype.newCheckbox = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "checkbox";
@@ -95,7 +95,7 @@ BYUScriptGen.prototype.newCheckbox = function(args) {
 	return newEl;
 }
 
-BYUScriptGen.prototype.newInput = function(args) {
+uvaScriptGen.prototype.newInput = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "text";
@@ -111,7 +111,7 @@ BYUScriptGen.prototype.newInput = function(args) {
 	return newEl;
 }
 
-BYUScriptGen.prototype.newSelect = function(args) {
+uvaScriptGen.prototype.newSelect = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("select");
 	if(args.options) {
@@ -130,7 +130,7 @@ BYUScriptGen.prototype.newSelect = function(args) {
 	return newEl;
 }
 
-BYUScriptGen.prototype.newSpan = function() {
+uvaScriptGen.prototype.newSpan = function() {
 	var newEl = document.createElement("span");
 	if(arguments[0])
 		newEl.id = arguments[0];
@@ -143,7 +143,7 @@ BYUScriptGen.prototype.newSpan = function() {
 	return newEl;
 };
 
-BYUScriptGen.prototype.newA = function(url, body) {
+uvaScriptGen.prototype.newA = function(url, body) {
 	var a = document.createElement("a");
 	a.href = url;
 	a.appendChild(document.createTextNode(body));
@@ -151,7 +151,7 @@ BYUScriptGen.prototype.newA = function(url, body) {
 	return a;
 }
 
-BYUScriptGen.prototype.createForm = function(doc) {
+uvaScriptGen.prototype.createForm = function(doc) {
 	function br() {
 		return document.createElement("br");
 	}
@@ -198,20 +198,20 @@ BYUScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_abort = this.newCheckbox({checked:0});
 	this.inputs.email_address = this.newInput({value:this.settings.defaults.email_address});
 
-	table.appendChild(this.returnNewRow("byu_sg_row_onenode", "Limit this job to one node: ", this.inputs.single_node));
-	table.appendChild(this.returnNewRow("byu_sg_row_numcores", "Number of processor cores <b>across all nodes</b>: ", this.inputs.num_cores));
-	table.appendChild(this.returnNewRow("byu_sg_row_numgpus", "Number of GPUs: ", this.inputs.num_gpus));
-	table.appendChild(this.returnNewRow("byu_sg_row_mempercore", "Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
-	table.appendChild(this.returnNewRow("byu_sg_row_walltime", "Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	table.appendChild(this.returnNewRow("byu_sg_row_testjob", "Job is a <b>test</b> job: ", this.inputs.is_test));
-	table.appendChild(this.returnNewRow("byu_sg_row_preemptable", "Job is preemptable: ", this.inputs.is_preemptable));
-	table.appendChild(this.formrows["is_requeueable"] = this.returnNewRow("byu_sg_row_requeueable", "Job is requeueable: ", this.inputs.is_requeueable));
+	table.appendChild(this.returnNewRow("uva_sg_row_onenode", "Limit this job to one node: ", this.inputs.single_node));
+	table.appendChild(this.returnNewRow("uva_sg_row_numcores", "Number of processor cores <b>across all nodes</b>: ", this.inputs.num_cores));
+	table.appendChild(this.returnNewRow("uva_sg_row_numgpus", "Number of GPUs: ", this.inputs.num_gpus));
+	table.appendChild(this.returnNewRow("uva_sg_row_mempercore", "Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+	table.appendChild(this.returnNewRow("uva_sg_row_walltime", "Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	table.appendChild(this.returnNewRow("uva_sg_row_testjob", "Job is a <b>test</b> job: ", this.inputs.is_test));
+	table.appendChild(this.returnNewRow("uva_sg_row_preemptable", "Job is preemptable: ", this.inputs.is_preemptable));
+	table.appendChild(this.formrows["is_requeueable"] = this.returnNewRow("uva_sg_row_requeueable", "Job is requeueable: ", this.inputs.is_requeueable));
 	this.formrows["is_requeueable"].style.display = "none";
-	table.appendChild(this.returnNewRow("byu_sg_row_fsgroup", "I am in a file sharing group and my group members need <br/>to read/modify my output files: ", this.inputs.in_group));
-	table.appendChild(this.formrows["group_name"] = this.returnNewRow("byu_sg_row_fsgroupname", "Group name (case sensitive): ", this.inputs.group_name));
+	table.appendChild(this.returnNewRow("uva_sg_row_fsgroup", "I am in a file sharing group and my group members need <br/>to read/modify my output files: ", this.inputs.in_group));
+	table.appendChild(this.formrows["group_name"] = this.returnNewRow("uva_sg_row_fsgroupname", "Group name (case sensitive): ", this.inputs.group_name));
 	this.formrows["group_name"].style.display = "none";
-	table.appendChild(this.returnNewRow("byu_sg_row_needlicenses", "Need licenses? ", this.inputs.need_licenses));
-	table.appendChild(this.formrows["licenses"] = this.returnNewRow("byu_sg_row_licenses",
+	table.appendChild(this.returnNewRow("uva_sg_row_needlicenses", "Need licenses? ", this.inputs.need_licenses));
+	table.appendChild(this.formrows["licenses"] = this.returnNewRow("uva_sg_row_licenses",
 					"Licenses: ", this.newSpan(	null,
 									"Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(),
 									"Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(),
@@ -220,8 +220,8 @@ BYUScriptGen.prototype.createForm = function(doc) {
 					)
 	);
 	this.formrows["licenses"].style.display = "none";
-	table.appendChild(this.returnNewRow("byu_sg_row_jobname", "Job name: ", this.inputs.job_name));
-	table.appendChild(this.returnNewRow("byu_sg_row_emailevents", "Receive email for job events: ", 
+	table.appendChild(this.returnNewRow("uva_sg_row_jobname", "Job name: ", this.inputs.job_name));
+	table.appendChild(this.returnNewRow("uva_sg_row_emailevents", "Receive email for job events: ", 
 				this.newSpan(	null,
 						this.inputs.email_begin,
 						" begin ",
@@ -232,20 +232,20 @@ BYUScriptGen.prototype.createForm = function(doc) {
 					    )
 			 )
 	);
-	table.appendChild(this.returnNewRow("byu_sg_row_emailaddress", "Email address: ", this.inputs.email_address));
+	table.appendChild(this.returnNewRow("uva_sg_row_emailaddress", "Email address: ", this.inputs.email_address));
 
 	this.inputs.features = [];
 	if(this.settings.features.show) {
-		var features_span = this.newSpan("byu_sg_input_features");
+		var features_span = this.newSpan("uva_sg_input_features");
 		for(var i in this.settings.features.names) {
 			var new_checkbox = this.newCheckbox({checked:0});
 			new_checkbox.feature_name = this.settings.features.names[i];
 			this.inputs.features.push(new_checkbox);
 			var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
 			var feature_container = this.newSpan(null);
-			feature_container.className = "byu_sg_input_feature_container";
-			var name_span = this.newSpan("byu_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
-			name_span.className = "byu_sg_input_feature_name";
+			feature_container.className = "uva_sg_input_feature_container";
+			var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
+			name_span.className = "uva_sg_input_feature_name";
 			feature_container.appendChild(name_span);
 			if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
 				var feature_status = this.settings.features_status[this.settings.features.names[i]];
@@ -261,21 +261,21 @@ BYUScriptGen.prototype.createForm = function(doc) {
 			}
 			features_span.appendChild(feature_container);
 		}
-		table.appendChild(this.returnNewRow("byu_sg_input_features", "Features: ", features_span));
+		table.appendChild(this.returnNewRow("uva_sg_input_features", "Features: ", features_span));
 	}
 
 	this.inputs.partitions = [];
 	if(this.settings.partitions.show) {
-		var partitions_span = this.newSpan("byu_sg_input_partitions");
+		var partitions_span = this.newSpan("uva_sg_input_partitions");
 		for(var i in this.settings.partitions.names) {
 			var new_checkbox = this.newCheckbox({checked:0});
 			new_checkbox.partition_name = this.settings.partitions.names[i];
 			this.inputs.partitions.push(new_checkbox);
 			var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
 			var partition_container = this.newSpan(null);
-			partition_container.className = "byu_sg_input_partition_container";
-			var name_span = this.newSpan("byu_sg_input_partition_" + new_checkbox.partition_name, new_checkbox, this.settings.partitions.names[i] + " [", url, "]");
-			name_span.className = "byu_sg_input_partition_name";
+			partition_container.className = "uva_sg_input_partition_container";
+			var name_span = this.newSpan("uva_sg_input_partition_" + new_checkbox.partition_name, new_checkbox, this.settings.partitions.names[i] + " [", url, "]");
+			name_span.className = "uva_sg_input_partition_name";
 			partition_container.appendChild(name_span);
 			if(this.settings.partitions_status && this.settings.partitions_status[this.settings.partitions.names[i]]) {
 				var partition_status = this.settings.partitions_status[this.settings.partitions.names[i]];
@@ -291,14 +291,14 @@ BYUScriptGen.prototype.createForm = function(doc) {
 			}
 			partitions_span.appendChild(partition_container);
 		}
-		table.appendChild(this.returnNewRow("byu_sg_input_partitions", "Partitions: ", partitions_span));
+		table.appendChild(this.returnNewRow("uva_sg_input_partitions", "Partitions: ", partitions_span));
 	}
 	
 	return form;
 
 }; /* end createForm() */
 
-BYUScriptGen.prototype.retrieveValues = function() {
+uvaScriptGen.prototype.retrieveValues = function() {
 	var jobnotes = [];
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
@@ -346,7 +346,7 @@ BYUScriptGen.prototype.retrieveValues = function() {
 	this.jobNotesDiv.innerHTML = jobnotes.join("<br/>\n");
 };
 
-BYUScriptGen.prototype.generateScriptPBS = function () {
+uvaScriptGen.prototype.generateScriptPBS = function () {
 	this.retrieveValues();
 
 	var scr = "#!/bin/bash\n\n#Submit this script with: qsub thefilename\n\n";
@@ -426,7 +426,7 @@ BYUScriptGen.prototype.generateScriptPBS = function () {
 };
 
 
-BYUScriptGen.prototype.generateScriptSLURM = function () {
+uvaScriptGen.prototype.generateScriptSLURM = function () {
 	var pbscompat = true;
 	var pmemmb;
 	var procs;
@@ -513,44 +513,44 @@ function stackTrace() {
     return err.stack;
 }
 
-BYUScriptGen.prototype.updateJobscript = function() {
+uvaScriptGen.prototype.updateJobscript = function() {
 	this.retrieveValues();
 	this.toJobScript();
 	return;
 };
 
-BYUScriptGen.prototype.init = function() {
+uvaScriptGen.prototype.init = function() {
 	this.inputDiv = document.createElement("div");
-	this.inputDiv.id = "byu_sg_input_container";
+	this.inputDiv.id = "uva_sg_input_container";
 	this.containerDiv.appendChild(this.inputDiv);
 
 	var scriptHeader = document.createElement("h1");
-	scriptHeader.id = "byu_sg_script_header";
+	scriptHeader.id = "uva_sg_script_header";
 	scriptHeader.appendChild(document.createTextNode("Job Script"));
 	this.containerDiv.appendChild(scriptHeader);
 
 	this.scriptFormatSelectorDiv = document.createElement("div");
-	this.scriptFormatSelectorDiv.id = "byu_sg_script_format_selector_container";
+	this.scriptFormatSelectorDiv.id = "uva_sg_script_format_selector_container";
 	this.script_format_selector = this.newSelect({ options : this.settings.script_formats });
-	this.script_format_selector.id = "byu_sg_script_format_selector";
-	this.containerDiv.appendChild(this.newSpan("byu_sg_script_format_selector_container", "Script format:", this.script_format_selector));
+	this.script_format_selector.id = "uva_sg_script_format_selector";
+	this.containerDiv.appendChild(this.newSpan("uva_sg_script_format_selector_container", "Script format:", this.script_format_selector));
 
 	this.form = this.createForm();
 	this.inputDiv.appendChild(this.form);
 
 	this.jobNotesDiv = document.createElement("div");
-	this.jobNotesDiv.id = "byu_sg_jobnotes";
+	this.jobNotesDiv.id = "uva_sg_jobnotes";
 	this.containerDiv.appendChild(this.jobNotesDiv);
 
 	this.jobScriptDiv = document.createElement("div");
-	this.jobScriptDiv.id = "byu_sg_jobscript";
+	this.jobScriptDiv.id = "uva_sg_jobscript";
 	this.containerDiv.appendChild(this.jobScriptDiv);
 
 	this.updateJobscript();
 };
 
-BYUScriptGen.prototype.toJobScript = function() {
-	var schedformat = byu_sg_script_format_selector.options[byu_sg_script_format_selector.selectedIndex].value;
+uvaScriptGen.prototype.toJobScript = function() {
+	var schedformat = uva_sg_script_format_selector.options[uva_sg_script_format_selector.selectedIndex].value;
 	var scr;
 	switch(schedformat) {
 		case "slurm" :
