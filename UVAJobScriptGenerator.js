@@ -36,7 +36,7 @@ TODO:
 
 
 
-var uvaScriptGen = function(div) {
+var UVAScriptGen = function(div) {
 	this.values = {};
 	this.containerDiv = div;
 	this.inputs = {};
@@ -61,7 +61,7 @@ var uvaScriptGen = function(div) {
 	return this;
 };
 
-uvaScriptGen.prototype.returnNewRow = function (rowid, left, right) {
+UVAScriptGen.prototype.returnNewRow = function (rowid, left, right) {
 	var l, r, tr;
 	l = document.createElement("td");
 	r = document.createElement("td");
@@ -76,7 +76,7 @@ uvaScriptGen.prototype.returnNewRow = function (rowid, left, right) {
 	return tr;
 }
 
-uvaScriptGen.prototype.newCheckbox = function(args) {
+UVAScriptGen.prototype.newCheckbox = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "checkbox";
@@ -95,7 +95,7 @@ uvaScriptGen.prototype.newCheckbox = function(args) {
 	return newEl;
 }
 
-uvaScriptGen.prototype.newInput = function(args) {
+UVAScriptGen.prototype.newInput = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "text";
@@ -111,7 +111,7 @@ uvaScriptGen.prototype.newInput = function(args) {
 	return newEl;
 }
 
-uvaScriptGen.prototype.newSelect = function(args) {
+UVAScriptGen.prototype.newSelect = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("select");
 	if(args.options) {
@@ -130,7 +130,7 @@ uvaScriptGen.prototype.newSelect = function(args) {
 	return newEl;
 }
 
-uvaScriptGen.prototype.newSpan = function() {
+UVAScriptGen.prototype.newSpan = function() {
 	var newEl = document.createElement("span");
 	if(arguments[0])
 		newEl.id = arguments[0];
@@ -143,7 +143,7 @@ uvaScriptGen.prototype.newSpan = function() {
 	return newEl;
 };
 
-uvaScriptGen.prototype.newA = function(url, body) {
+UVAScriptGen.prototype.newA = function(url, body) {
 	var a = document.createElement("a");
 	a.href = url;
 	a.appendChild(document.createTextNode(body));
@@ -151,7 +151,7 @@ uvaScriptGen.prototype.newA = function(url, body) {
 	return a;
 }
 
-uvaScriptGen.prototype.createForm = function(doc) {
+UVAScriptGen.prototype.createForm = function(doc) {
 	function br() {
 		return document.createElement("br");
 	}
@@ -204,6 +204,8 @@ uvaScriptGen.prototype.createForm = function(doc) {
 	table.appendChild(this.returnNewRow("uva_sg_row_mempercore", "Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 	table.appendChild(this.returnNewRow("uva_sg_row_walltime", "Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 	table.appendChild(this.returnNewRow("uva_sg_row_testjob", "Job is a <b>test</b> job: ", this.inputs.is_test));
+
+	
 	table.appendChild(this.returnNewRow("uva_sg_row_preemptable", "Job is preemptable: ", this.inputs.is_preemptable));
 	table.appendChild(this.formrows["is_requeueable"] = this.returnNewRow("uva_sg_row_requeueable", "Job is requeueable: ", this.inputs.is_requeueable));
 	this.formrows["is_requeueable"].style.display = "none";
@@ -263,24 +265,6 @@ uvaScriptGen.prototype.createForm = function(doc) {
 		}
 		table.appendChild(this.returnNewRow("uva_sg_input_features", "Features: ", features_span));
 	}
-	
-	this.inputs.features = [];
-	if(this.settings.features.show) {
-			var dropdownMenu = document.querySelector('.dropdown-menu');
-			for(var i in this.settings.features.names) {
-					var new_checkbox = this.newCheckbox({checked:0});
-					new_checkbox.feature_name = this.settings.features.names[i];
-					this.inputs.features.push(new_checkbox);
-					var label = document.createElement('label');
-					label.textContent = this.settings.features.names[i];
-					label.insertBefore(new_checkbox, label.firstChild);
-					dropdownMenu.appendChild(label);
-			}
-	}
-
-	document.querySelector('.dropdown-button').addEventListener('click', function() {
-			document.querySelector('.dropdown-menu').classList.toggle('show');
-	});
 
 	this.inputs.partitions = [];
 	if(this.settings.partitions.show) {
@@ -316,7 +300,7 @@ uvaScriptGen.prototype.createForm = function(doc) {
 
 }; /* end createForm() */
 
-uvaScriptGen.prototype.retrieveValues = function() {
+UVAScriptGen.prototype.retrieveValues = function() {
 	var jobnotes = [];
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
@@ -364,7 +348,7 @@ uvaScriptGen.prototype.retrieveValues = function() {
 	this.jobNotesDiv.innerHTML = jobnotes.join("<br/>\n");
 };
 
-uvaScriptGen.prototype.generateScriptPBS = function () {
+UVAScriptGen.prototype.generateScriptPBS = function () {
 	this.retrieveValues();
 
 	var scr = "#!/bin/bash\n\n#Submit this script with: qsub thefilename\n\n";
@@ -444,7 +428,7 @@ uvaScriptGen.prototype.generateScriptPBS = function () {
 };
 
 
-uvaScriptGen.prototype.generateScriptSLURM = function () {
+UVAScriptGen.prototype.generateScriptSLURM = function () {
 	var pbscompat = true;
 	var pmemmb;
 	var procs;
@@ -531,13 +515,13 @@ function stackTrace() {
     return err.stack;
 }
 
-uvaScriptGen.prototype.updateJobscript = function() {
+UVAScriptGen.prototype.updateJobscript = function() {
 	this.retrieveValues();
 	this.toJobScript();
 	return;
 };
 
-uvaScriptGen.prototype.init = function() {
+UVAScriptGen.prototype.init = function() {
 	this.inputDiv = document.createElement("div");
 	this.inputDiv.id = "uva_sg_input_container";
 	this.containerDiv.appendChild(this.inputDiv);
@@ -567,7 +551,7 @@ uvaScriptGen.prototype.init = function() {
 	this.updateJobscript();
 };
 
-uvaScriptGen.prototype.toJobScript = function() {
+UVAScriptGen.prototype.toJobScript = function() {
 	var schedformat = uva_sg_script_format_selector.options[uva_sg_script_format_selector.selectedIndex].value;
 	var scr;
 	switch(schedformat) {

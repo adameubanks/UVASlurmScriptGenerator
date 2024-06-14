@@ -1,129 +1,60 @@
-.dropdown {
-	position: relative;
-	display: inline-block;
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f8f9fa;
 }
 
-.dropdown-menu {
-	display: none;
-	position: absolute;
-	background-color: #f9f9f9;
-	min-width: 160px;
-	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-	padding: 12px 16px;
-	z-index: 1;
+h1 {
+	text-align: center;
+	margin-bottom: 20px;
 }
 
-.dropdown-menu label {
-	display: block;
+.container {
+	background-color: #ffffff;
+	padding: 30px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.dropdown-menu.show {
-	display: block;
+/* Input form styling */
+.form-group {
+	margin-bottom: 1.5rem;
+	display: flex;
+	flex-direction: column;
 }
 
-#uva_sg_input_container tr {
-	border: 4px solid yellow;
+.form-group label {
+	margin-bottom: 0.5rem;
+	font-weight: bold;
 }
 
-#uva_sg_jobnotes {
-	margin-top: 10px;
-	margin-bottom: 1px;
-	background-color: #e2e252;
-	display: block;
-}
-
-#uva_sg_jobscript {
-	/*background-color: #e2e2e2;*/
-	background-color: #eee;
-}
-
-#uva_sg_input_container td,th {
-	background-color: #eee;
-	padding: 3px;
-}
-
-#uva_sg_input_container {
-/*	background-color: #e2e2e2;*/
-	border:1px solid #ccc;
-	margin:0 0 1em;
-}
-
-#uva_sg_input_container th {
-	border: 1px solid #808080;
-	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,.33) inset;
-	-moz-box-shadow: 0 1px 0 rgba(255,255,255,.33) inset;
-	box-shadow: 0 1px 0 rgba(255,255,255,.33) inset;
-	
-	background-image: -webkit-linear-gradient(top, #aaa 0%,#888 100%);
-	background-image: -moz-linear-gradient(top, #aaa 0%, #888 100%);
-	background-image: -ms-linear-gradient(top, #aaa 0%,#888 100%);
-	background-image: -o-linear-gradient(top, #aaa 0%,#888 100%);
-	background-image: linear-gradient(top, #aaa 0%,#888 100%);
-}
-
-#uva_sg_input_container td {
-	width: 40%;
-	max-width: 750px;
+.form-group input,
+.form-group select,
+.form-group textarea {
+	padding: 0.5rem;
+	border-radius: 4px;
 	border: 1px solid #ccc;
-}
-#uva_sg_input_container td + td {
-	width: 60%;
-	background:#fff;
-}
-#uva_sg_input_container input {
-	display:inline-block;
+	font-size: 1rem;
+	width: 100%;
 }
 
-#uva_sg_input_features span {
-	display:inline-block;
-	border: 1px solid #808080;
-	background-color: #eee;
+/* Table styling */
+table {
+	border-collapse: collapse;
+	width: 100%;
 }
 
-/* Nodes avail, etc. boxes */
-#uva_sg_input_features span > span > span {
-	display:block;
-	border: 0px;
-	width: 13em;
-	/*background-color: #e0e;*/
+table, th, td {
+	border: 1px solid #ddd;
+	padding: 0.5rem;
 }
 
-.uva_sg_input_feature_class {
-	padding: 5px;
-	background-color: #eee;
+th {
+	background-color: #f2f2f2;
+	text-align: left;
 }
 
-#uva_sg_input_partitions span {
-	display:inline-block;
-	border: 1px solid #808080;
-}
-
-/* Nodes avail, etc. boxes */
-#uva_sg_input_partitions span > span > span {
-	display:block;
-	border: 0px;
-	/*background-color: #e0e;*/
-}
-
-
-.uva_sg_input_feature_container {
-	display: inline;
-	padding: 5px;
-	background-color: #eee;
-}
-
-.uva_sg_input_feature_name {
-	display: inline;
-	font-weight: bold;
-}
-
-.uva_sg_input_partition_container {
-	display: inline;
-	padding: 5px;
-	background-color: #eee;
-}
-
-.uva_sg_input_partition_name {
-	display: inline;
-	font-weight: bold;
+/* Span styling */
+span {
+	display: inline-block;
+	margin-bottom: 0.5rem;
 }
