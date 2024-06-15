@@ -153,152 +153,155 @@ UVAScriptGen.prototype.newA = function(url, body) {
 
 UVAScriptGen.prototype.createForm = function(doc) {
 	function br() {
-		return document.createElement("br");
+			return document.createElement("br");
 	}
+
 	function newHeaderRow(text) {
-		var headertr = document.createElement("tr");
-		var headerth = document.createElement("th");
-		headerth.colSpan = 2;
-		headerth.appendChild(document.createTextNode(text));
-		headertr.appendChild(headerth);
-		return headertr;
+			var headerDiv = document.createElement("div");
+			var header = document.createElement("h3");
+			header.appendChild(document.createTextNode(text));
+			headerDiv.appendChild(header);
+			return headerDiv;
 	}
 
-	var newEl;
 	form = document.createElement("form");
-	var table = document.createElement("table");
-	form.appendChild(table);
-	table.appendChild(newHeaderRow("Parameters"));
 
-	this.inputs.single_node = this.newCheckbox({checked:1});
-	this.inputs.num_cores = this.newInput({value:1});
-	this.inputs.num_gpus = this.newInput({value:0, size:4});
-	this.inputs.mem_per_core = this.newInput({value:1, size:6});
-	this.inputs.mem_units = this.newSelect({options:[["GB", "GB"],["MB", "MB"]]});
-	this.inputs.wallhours = this.newInput({value:"1", size:3});
-	this.inputs.wallmins = this.newInput({value:"00", size:2, maxLength:2});
-	this.inputs.wallsecs = this.newInput({value:"00", size:2, maxLength:2});
-	this.inputs.is_test = this.newCheckbox({checked:0});
-	this.inputs.is_preemptable = this.newCheckbox({checked:0, toggle:"is_requeueable"});
+	// Main form elements
+	form.appendChild(newHeaderRow("Parameters"));
 
-	this.inputs.is_requeueable = this.newCheckbox({checked:0});
-	this.inputs.in_group = this.newCheckbox({checked:0, toggle:"group_name"});
-	this.inputs.group_name = this.newInput({value:"MYGROUPNAME"});
-	this.inputs.need_licenses = this.newCheckbox({checked:0, toggle:"licenses"});
-
-	this.inputs.lic0_name = this.newInput({});
-	this.inputs.lic0_count = this.newInput({size:3, maxLength:4});
-	this.inputs.lic1_name = this.newInput({});
-	this.inputs.lic1_count = this.newInput({size:3, maxLength:4});
-	this.inputs.lic2_name = this.newInput({});
-	this.inputs.lic2_count = this.newInput({size:3, maxLength:4});
+	// Job name
 	this.inputs.job_name = this.newInput({});
-	this.inputs.email_begin = this.newCheckbox({checked:0});
-	this.inputs.email_end = this.newCheckbox({checked:0});
-	this.inputs.email_abort = this.newCheckbox({checked:0});
-	this.inputs.email_address = this.newInput({value:this.settings.defaults.email_address});
+	form.appendChild(this.createLabelInputPair("Job name", this.inputs.job_name));
 
-	table.appendChild(this.returnNewRow("uva_sg_row_onenode", "Limit this job to one node: ", this.inputs.single_node));
-	table.appendChild(this.returnNewRow("uva_sg_row_numcores", "Number of processor cores <b>across all nodes</b>: ", this.inputs.num_cores));
-	table.appendChild(this.returnNewRow("uva_sg_row_numgpus", "Number of GPUs: ", this.inputs.num_gpus));
-	table.appendChild(this.returnNewRow("uva_sg_row_mempercore", "Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
-	table.appendChild(this.returnNewRow("uva_sg_row_walltime", "Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	table.appendChild(this.returnNewRow("uva_sg_row_testjob", "Job is a <b>test</b> job: ", this.inputs.is_test));
+	// Number of processor cores across all nodes
+	this.inputs.num_cores = this.newInput({value: 1});
+	form.appendChild(this.createLabelInputPair("Number of processor cores across all nodes", this.inputs.num_cores));
 
-	
-	table.appendChild(this.returnNewRow("uva_sg_row_preemptable", "Job is preemptable: ", this.inputs.is_preemptable));
-	table.appendChild(this.formrows["is_requeueable"] = this.returnNewRow("uva_sg_row_requeueable", "Job is requeueable: ", this.inputs.is_requeueable));
-	this.formrows["is_requeueable"].style.display = "none";
-	table.appendChild(this.returnNewRow("uva_sg_row_fsgroup", "I am in a file sharing group and my group members need <br/>to read/modify my output files: ", this.inputs.in_group));
-	table.appendChild(this.formrows["group_name"] = this.returnNewRow("uva_sg_row_fsgroupname", "Group name (case sensitive): ", this.inputs.group_name));
-	this.formrows["group_name"].style.display = "none";
-	table.appendChild(this.returnNewRow("uva_sg_row_needlicenses", "Need licenses? ", this.inputs.need_licenses));
-	table.appendChild(this.formrows["licenses"] = this.returnNewRow("uva_sg_row_licenses",
-					"Licenses: ", this.newSpan(	null,
-									"Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(),
-									"Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(),
-									"Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count
-								)
-					)
-	);
-	this.formrows["licenses"].style.display = "none";
-	table.appendChild(this.returnNewRow("uva_sg_row_jobname", "Job name: ", this.inputs.job_name));
-	table.appendChild(this.returnNewRow("uva_sg_row_emailevents", "Receive email for job events: ", 
-				this.newSpan(	null,
-						this.inputs.email_begin,
-						" begin ",
-						this.inputs.email_end,
-						" end ",
-						this.inputs.email_abort,
-						" abort"
-					    )
-			 )
-	);
-	table.appendChild(this.returnNewRow("uva_sg_row_emailaddress", "Email address: ", this.inputs.email_address));
+	// Number of GPUs
+	this.inputs.num_gpus = this.newInput({value: 0, size: 4});
+	form.appendChild(this.createLabelInputPair("Number of GPUs", this.inputs.num_gpus));
 
+	// Memory per processor core
+	this.inputs.mem_per_core = this.newInput({value: 1, size: 6});
+	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
+	form.appendChild(this.createLabelInputPair("Memory per processor core", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+
+	// Features section
 	this.inputs.features = [];
-	if(this.settings.features.show) {
-		var features_span = this.newSpan("uva_sg_input_features");
-		for(var i in this.settings.features.names) {
-			var new_checkbox = this.newCheckbox({checked:0});
-			new_checkbox.feature_name = this.settings.features.names[i];
-			this.inputs.features.push(new_checkbox);
-			var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
-			var feature_container = this.newSpan(null);
-			feature_container.className = "uva_sg_input_feature_container";
-			var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
-			name_span.className = "uva_sg_input_feature_name";
-			feature_container.appendChild(name_span);
-			if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
-				var feature_status = this.settings.features_status[this.settings.features.names[i]];
-				feature_container.appendChild(
-					this.newSpan(	null,
-							"Nodes avail: ",
-							feature_status.nodes_free + "/" + feature_status.nodes_total,
-							br(),
-							"Cores avail: ",
-							feature_status.cores_free + "/" + feature_status.cores_total
-					)
-				);
+	if (this.settings.features.show) {
+			var features_span = this.newSpan("uva_sg_input_features");
+			for (var i in this.settings.features.names) {
+					var new_checkbox = this.newCheckbox({checked: 0});
+					new_checkbox.feature_name = this.settings.features.names[i];
+					this.inputs.features.push(new_checkbox);
+					var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
+					var feature_container = this.newSpan(null);
+					feature_container.className = "uva_sg_input_feature_container";
+					var name_span = this.newSpan(null, this.settings.features.names[i], url);
+					name_span.className = "uva_sg_input_feature_name";
+					feature_container.appendChild(name_span);
+					feature_container.appendChild(new_checkbox);
+					features_span.appendChild(feature_container);
 			}
-			features_span.appendChild(feature_container);
-		}
-		table.appendChild(this.returnNewRow("uva_sg_input_features", "Features: ", features_span));
+			form.appendChild(this.createLabelInputPair("Features", features_span));
 	}
 
+	// Partitions section
 	this.inputs.partitions = [];
-	if(this.settings.partitions.show) {
-		var partitions_span = this.newSpan("uva_sg_input_partitions");
-		for(var i in this.settings.partitions.names) {
-			var new_checkbox = this.newCheckbox({checked:0});
-			new_checkbox.partition_name = this.settings.partitions.names[i];
-			this.inputs.partitions.push(new_checkbox);
-			var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
-			var partition_container = this.newSpan(null);
-			partition_container.className = "uva_sg_input_partition_container";
-			var name_span = this.newSpan("uva_sg_input_partition_" + new_checkbox.partition_name, new_checkbox, this.settings.partitions.names[i] + " [", url, "]");
-			name_span.className = "uva_sg_input_partition_name";
-			partition_container.appendChild(name_span);
-			if(this.settings.partitions_status && this.settings.partitions_status[this.settings.partitions.names[i]]) {
-				var partition_status = this.settings.partitions_status[this.settings.partitions.names[i]];
-				partition_container.appendChild(
-					this.newSpan(	null,
-							"Nodes avail: ",
-							partition_status.nodes_free + "/" + partition_status.nodes_total,
-							br(),
-							"Cores avail: ",
-							partition_status.cores_free + "/" + partition_status.cores_total
-					)
-				);
+	if (this.settings.partitions.show) {
+			var partitions_span = this.newSpan("uva_sg_input_partitions");
+			for (var i in this.settings.partitions.names) {
+					var new_checkbox = this.newCheckbox({checked: 0});
+					new_checkbox.partition_name = this.settings.partitions.names[i];
+					this.inputs.partitions.push(new_checkbox);
+					var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
+					var partition_container = this.newSpan(null);
+					partition_container.className = "uva_sg_input_partition_container";
+					var name_span = this.newSpan(null, this.settings.partitions.names[i], url);
+					name_span.className = "uva_sg_input_partition_name";
+					partition_container.appendChild(name_span);
+					partition_container.appendChild(new_checkbox);
+					partitions_span.appendChild(partition_container);
 			}
-			partitions_span.appendChild(partition_container);
-		}
-		table.appendChild(this.returnNewRow("uva_sg_input_partitions", "Partitions: ", partitions_span));
+			form.appendChild(this.createLabelInputPair("Partitions", partitions_span));
 	}
-	
-	return form;
 
-}; /* end createForm() */
+	// Collapsible menu for other elements
+	var collapsibleDiv = document.createElement("div");
+	collapsibleDiv.className = "collapse";
+	collapsibleDiv.id = "advancedSettings";
+
+	this.inputs.single_node = this.newCheckbox({checked: 1});
+	this.inputs.wallhours = this.newInput({value: "1", size: 3});
+	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
+	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
+	this.inputs.is_test = this.newCheckbox({checked: 0});
+	this.inputs.is_preemptable = this.newCheckbox({checked: 0, toggle: "is_requeueable"});
+	this.inputs.is_requeueable = this.newCheckbox({checked: 0});
+	this.inputs.in_group = this.newCheckbox({checked: 0, toggle: "group_name"});
+	this.inputs.group_name = this.newInput({value: "MYGROUPNAME"});
+	this.inputs.need_licenses = this.newCheckbox({checked: 0, toggle: "licenses"});
+	this.inputs.lic0_name = this.newInput({});
+	this.inputs.lic0_count = this.newInput({size: 3, maxLength: 4});
+	this.inputs.lic1_name = this.newInput({});
+	this.inputs.lic1_count = this.newInput({size: 3, maxLength: 4});
+	this.inputs.lic2_name = this.newInput({});
+	this.inputs.lic2_count = this.newInput({size: 3, maxLength: 4});
+	this.inputs.email_begin = this.newCheckbox({checked: 0});
+	this.inputs.email_end = this.newCheckbox({checked: 0});
+	this.inputs.email_abort = this.newCheckbox({checked: 0});
+	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
+
+	collapsibleDiv.appendChild(this.createLabelInputPair("Limit this job to one node", this.inputs.single_node));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Walltime", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is a test job", this.inputs.is_test));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is preemptable", this.inputs.is_preemptable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is requeueable", this.inputs.is_requeueable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files", this.inputs.in_group));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Group name (case sensitive)", this.inputs.group_name));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Need licenses?", this.inputs.need_licenses));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Licenses", this.newSpan(null, "Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(), "Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(), "Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count)));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Receive email for job events", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Email address", this.inputs.email_address));
+
+	// Collapsible button
+	var collapsibleButton = document.createElement("button");
+	collapsibleButton.type = "button";
+	collapsibleButton.className = "btn btn-primary";
+	collapsibleButton.setAttribute("data-toggle", "collapse");
+	collapsibleButton.setAttribute("data-target", "#advancedSettings");
+	collapsibleButton.appendChild(document.createTextNode("Advanced Settings"));
+	form.appendChild(collapsibleButton);
+
+	form.appendChild(collapsibleDiv);
+
+	return form;
+};
+
+// Helper function to create label-input pair
+UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
+	var div = document.createElement("div");
+	var label = document.createElement("label");
+	label.appendChild(document.createTextNode(labelText));
+	div.appendChild(label);
+	div.appendChild(inputElement);
+	return div;
+};
+
+// Helper function to create a span element with multiple children
+UVAScriptGen.prototype.newSpan = function(id, ...children) {
+	var span = document.createElement("span");
+	if (id) span.id = id;
+	for (var child of children) {
+			if (typeof child === "string") {
+					span.appendChild(document.createTextNode(child));
+			} else {
+					span.appendChild(child);
+			}
+	}
+	return span;
+};
+
 
 UVAScriptGen.prototype.retrieveValues = function() {
 	var jobnotes = [];
