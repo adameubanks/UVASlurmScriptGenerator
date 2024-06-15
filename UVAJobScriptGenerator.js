@@ -562,5 +562,5 @@ UVAScriptGen.prototype.toJobScript = function() {
 			scr = this.generateScriptPBS();
 			break;
 	}
-	this.jobScriptDiv.innerHTML = "<pre>" + scr + "</pre>";
+	this.jobScriptDiv.innerHTML = "<pre><code>" + scr + "</code></pre>";
 };
