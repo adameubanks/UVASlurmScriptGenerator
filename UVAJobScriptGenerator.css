@@ -64,3 +64,23 @@ pre {
 	padding: 10px;
 	border-radius: 4px;
 }
+
+.uva_sg_input_feature_container, .uva_sg_input_partition_container {
+	background-color: #f2f2f2;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 5px;
+}
+
+.uva_sg_input_feature_name {
+	display: block;
+}
+
+.input-label {
+	margin-right: 5px;
+}
+
+.input-pair {
+	display: flex;
+	align-items: baseline;
+}

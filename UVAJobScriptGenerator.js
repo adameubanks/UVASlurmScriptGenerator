@@ -61,21 +61,6 @@ var UVAScriptGen = function(div) {
 	return this;
 };
 
-UVAScriptGen.prototype.returnNewRow = function (rowid, left, right) {
-	var l, r, tr;
-	l = document.createElement("td");
-	r = document.createElement("td");
-	tr = document.createElement("tr");
-	l.id = rowid + "_left";
-	r.id = rowid + "_right";
-	tr.id = rowid;
-	l.innerHTML = left;
-	r.appendChild(right)
-	tr.appendChild(l);
-	tr.appendChild(r);
-	return tr;
-}
-
 UVAScriptGen.prototype.newCheckbox = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
@@ -175,39 +160,49 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 	// Job name
 	this.inputs.job_name = this.newInput({});
-	form.appendChild(this.createLabelInputPair("Job name", this.inputs.job_name));
+	form.appendChild(this.createLabelInputPair("Job name: ", this.inputs.job_name));
 
 	// Number of processor cores across all nodes
 	this.inputs.num_cores = this.newInput({value: 1});
-	form.appendChild(this.createLabelInputPair("Number of processor cores across all nodes", this.inputs.num_cores));
+	form.appendChild(this.createLabelInputPair("Number of processor cores across all nodes: ", this.inputs.num_cores));
 
 	// Number of GPUs
 	this.inputs.num_gpus = this.newInput({value: 0, size: 4});
-	form.appendChild(this.createLabelInputPair("Number of GPUs", this.inputs.num_gpus));
+	form.appendChild(this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus));
 
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newInput({value: 1, size: 6});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Memory per processor core", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+	form.appendChild(this.createLabelInputPair("Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
-	// Features section
 	this.inputs.features = [];
-	if (this.settings.features.show) {
-			var features_span = this.newSpan("uva_sg_input_features");
-			for (var i in this.settings.features.names) {
-					var new_checkbox = this.newCheckbox({checked: 0});
-					new_checkbox.feature_name = this.settings.features.names[i];
-					this.inputs.features.push(new_checkbox);
-					var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
-					var feature_container = this.newSpan(null);
-					feature_container.className = "uva_sg_input_feature_container";
-					var name_span = this.newSpan(null, this.settings.features.names[i], url);
-					name_span.className = "uva_sg_input_feature_name";
-					feature_container.appendChild(name_span);
-					feature_container.appendChild(new_checkbox);
-					features_span.appendChild(feature_container);
+	if(this.settings.features.show) {
+		var features_span = this.newSpan("uva_sg_input_features");
+		for(var i in this.settings.features.names) {
+			var new_checkbox = this.newCheckbox({checked:0});
+			new_checkbox.feature_name = this.settings.features.names[i];
+			this.inputs.features.push(new_checkbox);
+			var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
+			var feature_container = this.newSpan(null);
+			feature_container.className = "uva_sg_input_feature_container";
+			var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
+			name_span.className = "uva_sg_input_feature_name";
+			feature_container.appendChild(name_span);
+			if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
+				var feature_status = this.settings.features_status[this.settings.features.names[i]];
+				feature_container.appendChild(
+					this.newSpan(	null,
+							"Nodes avail: ",
+							feature_status.nodes_free + "/" + feature_status.nodes_total,
+							br(),
+							"Cores avail: ",
+							feature_status.cores_free + "/" + feature_status.cores_total
+					)
+				);
 			}
-			form.appendChild(this.createLabelInputPair("Features", features_span));
+			features_span.appendChild(feature_container);
+		}
+		form.appendChild(this.createLabelInputPair("Features: ", features_span));
 	}
 
 	// Partitions section
@@ -223,11 +218,11 @@ UVAScriptGen.prototype.createForm = function(doc) {
 					partition_container.className = "uva_sg_input_partition_container";
 					var name_span = this.newSpan(null, this.settings.partitions.names[i], url);
 					name_span.className = "uva_sg_input_partition_name";
-					partition_container.appendChild(name_span);
 					partition_container.appendChild(new_checkbox);
+					partition_container.appendChild(name_span);
 					partitions_span.appendChild(partition_container);
 			}
-			form.appendChild(this.createLabelInputPair("Partitions", partitions_span));
+			form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 	}
 
 	// Collapsible menu for other elements
@@ -256,17 +251,18 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
 	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
 
-	collapsibleDiv.appendChild(this.createLabelInputPair("Limit this job to one node", this.inputs.single_node));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Walltime", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is a test job", this.inputs.is_test));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is preemptable", this.inputs.is_preemptable));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is requeueable", this.inputs.is_requeueable));
-	collapsibleDiv.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files", this.inputs.in_group));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Group name (case sensitive)", this.inputs.group_name));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Need licenses?", this.inputs.need_licenses));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Licenses", this.newSpan(null, "Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(), "Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(), "Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count)));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Receive email for job events", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Email address", this.inputs.email_address));
+	collapsibleDiv.appendChild(document.createElement("br"));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Need licenses? ", this.inputs.need_licenses));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Licenses: ", this.newSpan(null, "Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(), "Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(), "Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count)));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
 	// Collapsible button
 	var collapsibleButton = document.createElement("button");
@@ -285,7 +281,9 @@ UVAScriptGen.prototype.createForm = function(doc) {
 // Helper function to create label-input pair
 UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var div = document.createElement("div");
+	div.className = "input-pair";
 	var label = document.createElement("label");
+	label.className = "input-label";
 	label.appendChild(document.createTextNode(labelText));
 	div.appendChild(label);
 	div.appendChild(inputElement);
