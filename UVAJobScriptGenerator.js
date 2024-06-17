@@ -82,16 +82,20 @@ UVAScriptGen.prototype.newCheckbox = function(args) {
 	newEl.type = "checkbox";
 	var formrows = this.formrows;
 	if(args.checked)
-		newEl.checked = true;
-	if(args.toggle)
-		newEl.onclick = newEl.onchange = function () {
-			formrows[args.toggle].style.display = newEl.checked ? "" : "none";
-			tthis.updateJobscript();
-		};
-	else
-		newEl.onclick = newEl.onchange = function () {
-			tthis.updateJobscript();
-		};
+			newEl.checked = true;
+	if(args.toggle) {
+			newEl.onclick = newEl.onchange = function () {
+					if(formrows[args.toggle]) {
+							formrows[args.toggle].style.display = newEl.checked ? "" : "none";
+					}
+					tthis.updateJobscript();
+			};
+	}
+	else {
+			newEl.onclick = newEl.onchange = function () {
+					tthis.updateJobscript();
+			};
+	}
 	return newEl;
 }
 
@@ -324,7 +328,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	}
 
 	this.values.is_test = this.inputs.is_test.checked;
-	this.values.is_preemptable = this.inputs.is_preemptable.checked;
+	this.values.is_preemptable = this.inputs.is_preemptable && this.inputs.is_preemptable.checked;
 	this.values.is_requeueable = this.inputs.is_requeueable && this.inputs.is_requeueable.checked;
 	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
 	this.values.num_cores = this.inputs.num_cores.value;
