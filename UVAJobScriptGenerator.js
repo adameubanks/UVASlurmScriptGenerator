@@ -55,6 +55,8 @@ var UVAScriptGen = function(div) {
 		/* You may want to dynamically generate features/partitions. See example HTML file */
 		features : {},
 		features_status : {},
+		gres: {},
+		gres_status: {}, 
 		partitions : {},
 		partitions_status : {},
 	};
@@ -223,6 +225,26 @@ UVAScriptGen.prototype.createForm = function(doc) {
 					partitions_span.appendChild(partition_container);
 			}
 			form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
+	}
+
+	// GREs section
+	this.inputs.gres = [];
+	if (this.settings.gres.show){
+		var gres_span = this.newSpan("uva_sg_input_gres");
+		for (var i in this.settings.gres.names){
+			var new_checkbox = this.newCheckbox({checked: 0});
+			new_checkbox.gres_name = this.settings.gres.names[i];
+			this.inputs.gres.push(new_checkbox);
+			var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
+			var gre_container = this.newSpan(null);
+			gre_container.className = "uva_sg_input_gre_container";
+			var name_span = this.newSpan(null, this.settings.gres.names[i], url);
+			name_span.className = "uva_sg_input_gre_name";
+			gre_container.appendChild(new_checkbox);
+			gre_container.appendChild(name_span);
+			gres_span.appendChild(gre_container);
+		}
+		form.appendChild(this.createLabelInputPair("gres: ", gres_span));
 	}
 
 	// Collapsible menu for other elements
