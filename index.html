@@ -31,23 +31,23 @@
         uva_script_gen.settings.gres = {
             names: ["RTX3090", "RTX2080", "a6000", "a40", "v100", "v100_40", "v100_80"],
             // info_base_url:  leave for future
-            show: false
+            show: true
         };
         
         // This function update the visibility of the gres options checkbox, only when the user pick 
         // the GPU or Interactive option the gres checkbox will appear
-        function updateGresVisibility() {
-            var partitions = document.querySelectorAll('input[name="partition"]:checked');
-            var showGres = false;
-            partitions.forEach(function (partition){
-                if (partition.value === "GPU" || partition.value === "Interactive"){
-                    showGres = true;
-                }
-            });
-            uva_script_gen.settings.gres.show = showGres;
-            var gresContainer = document.getElementById("gresOptions");
-            gresContainer.style.display = showGres ? 'block' : 'none';
-        }
+        // function updateGresVisibility() {
+        //     var partitions = document.querySelectorAll('input[name="partition"]:checked');
+        //     var showGres = false;
+        //     partitions.forEach(function (partition){
+        //         if (partition.value === "GPU" || partition.value === "Interactive"){
+        //             showGres = true;
+        //         }
+        //     });
+        //     uva_script_gen.settings.gres.show = showGres;
+        //     var gresContainer = document.getElementById("gresOptions");
+        //     gresContainer.style.display = showGres ? 'block' : 'none';
+        // }
         // uva_script_gen.settings.features_status = {
         //     "amd": {"nodes_free": 0, "nodes_total": 2, "cores_free": 0, "cores_total": 32},
         //     "avx": {"nodes_free": 35, "nodes_total": 320, "cores_free": 817, "cores_total": 5120},
@@ -65,36 +65,36 @@
         // };
         uva_script_gen.init();
 
-        // Create container for GRES options and initially hide it
-        var gresContainer = document.createElement('div');
-        partitionContainer.id = "partitionOptions";
-        uva_script_gen.settings.partitions.names.forEach(function (partition) {
-            var label = document.createElement('label');
-            var checkbox = document.createElement('input');
-            checkbox.type = "checkbox";
-            checkbox.name = "partition";
-            checkbox.value = partition;
-            checkbox.onclick = updateGresVisibility;
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(partition));
-            partitionContainer.appendChild(label);
-        });
-        document.getElementById("UVAJobScriptGenerator").appendChild(partitionContainer);
+        // // Create container for GRES options and initially hide it
+        // var partitionContainer = document.createElement('div');
+        // partitionContainer.id = "partitionOptions";
+        // uva_script_gen.settings.partitions.names.forEach(function (partition) {
+        //     var label = document.createElement('label');
+        //     var checkbox = document.createElement('input');
+        //     checkbox.type = "checkbox";
+        //     checkbox.name = "partition";
+        //     checkbox.value = partition;
+        //     checkbox.onclick = updateGresVisibility;
+        //     label.appendChild(checkbox);
+        //     label.appendChild(document.createTextNode(partition));
+        //     partitionContainer.appendChild(label);
+        // });
+        // document.getElementById("UVAJobScriptGenerator").appendChild(partitionContainer);
         
-        var gresContainer = document.createElement('div');
-        gresContainer.id = "gresOptions";
-        gresContainer.style.display = 'none';
-        uva_script_gen.settings.gres.names.forEach(function (gres) {
-            var label = document.createElement('label');
-            var checkbox = document.createElement('input');
-            checkbox.type = "checkbox";
-            checkbox.name = "gres";
-            checkbox.value = gres;
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(gres));
-            gresContainer.appendChild(label);
-        });
-        document.getElementById("UVAJobScriptGenerator").appendChild(gresContainer);
+        // var gresContainer = document.createElement('div');
+        // gresContainer.id = "gresOptions";
+        // gresContainer.style.display = 'none';
+        // uva_script_gen.settings.gres.names.forEach(function (gres) {
+        //     var label = document.createElement('label');
+        //     var checkbox = document.createElement('input');
+        //     checkbox.type = "checkbox";
+        //     checkbox.name = "gres";
+        //     checkbox.value = gres;
+        //     label.appendChild(checkbox);
+        //     label.appendChild(document.createTextNode(gres));
+        //     gresContainer.appendChild(label);
+        // });
+        // document.getElementById("UVAJobScriptGenerator").appendChild(gresContainer);
     </script>
 </div>
 </body>
