@@ -229,11 +229,13 @@ UVAScriptGen.prototype.createForm = function(doc) {
 			form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 	}
 
+
 	// GREs section
 	this.inputs.gres = [];
 	console.log("show = " + this.settings.gres.show)
 	if (this.settings.gres.show){
 		var gres_span = this.newSpan("uva_sg_input_gres");
+		gres_span.style.display = "none";  // Initially hide the GRES section
 		for (var i in this.settings.gres.names){
 			var new_checkbox = this.newCheckbox({checked: 0});
 			new_checkbox.gres_name = this.settings.gres.names[i];
@@ -343,10 +345,20 @@ UVAScriptGen.prototype.createForm = function(doc) {
 // }
 
 function updateGresVisibility(event){
-    const uva_sg_input_gres = document.getElementById("uva_sg_input_gres");
-    if (!uva_sg_input_gres) return;
+    // const uva_sg_input_gres = document.getElementById("uva_sg_input_gres");
+    // if (!uva_sg_input_gres) return;
 
-    uva_sg_input_gres.style.display = event.target.checked ? "block" : "none";
+    // uva_sg_input_gres.style.display = event.target.checked ? "block" : "none";
+	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
+    var gresSection = document.getElementById("uva_sg_input_gres");
+    
+    // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
+    var showGres = Array.from(partitionCheckboxes).some(checkbox => {
+        return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
+    });
+
+    // Show or hide the GRES options
+    gresSection.style.display = showGres ? 'block' : 'none';
 }
 
 // Helper function to create label-input pair
