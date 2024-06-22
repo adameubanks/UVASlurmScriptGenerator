@@ -252,10 +252,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		form.appendChild(this.createLabelInputPair("GRES: ", gres_span));
 	}
 
-	// Collapsible menu for other elements
-	var collapsibleDiv = document.createElement("div");
-	collapsibleDiv.className = "collapse";
-	collapsibleDiv.id = "advancedSettings";
+	// Advanced settings directly in the form (no collapsible section)
 
 	this.inputs.single_node = this.newCheckbox({checked: 1});
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
@@ -278,29 +275,17 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
 	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
 
-	collapsibleDiv.appendChild(document.createElement("br"));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
-	collapsibleDiv.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Need licenses? ", this.inputs.need_licenses));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Licenses: ", this.newSpan(null, "Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(), "Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(), "Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count)));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
-	collapsibleDiv.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
+	form.appendChild(document.createElement("br"));
+	form.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
+	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	form.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
+	form.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
+	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
+	form.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
+	form.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
+	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
+	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
-	// Collapsible button
-	var collapsibleButton = document.createElement("button");
-	collapsibleButton.type = "button";
-	collapsibleButton.className = "btn btn-primary";
-	collapsibleButton.setAttribute("data-toggle", "collapse");
-	collapsibleButton.setAttribute("data-target", "#advancedSettings");
-	collapsibleButton.appendChild(document.createTextNode("Advanced Settings"));
-	form.appendChild(collapsibleButton);
-
-	form.appendChild(collapsibleDiv);
 	
 
 	return form;
