@@ -334,12 +334,13 @@ function updateGresVisibility(event){
     // if (!uva_sg_input_gres) return;
 
     // uva_sg_input_gres.style.display = event.target.checked ? "block" : "none";
+	console.log("update visibility")
 	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
     var gresSection = document.getElementById("uva_sg_input_gres");
     
     // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
     var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-        return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
+        return checkbox.checked && (checkbox.partition_name === 'gpu' || checkbox.partition_name === 'interactive');
     });
 
     // Show or hide the GRES options
@@ -389,6 +390,15 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	for(var i in this.inputs.partitions) {
 		if(this.inputs.partitions[i].checked){
 			this.values.partitions.push(this.inputs.partitions[i].partition_name);
+		} else {
+		}
+	}
+
+	// // add part for the gres
+	this.values.gres = [];
+	for(var i in this.inputs.gres) {
+		if(this.inputs.gres[i].checked){
+			this.values.gres.push(this.inputs.gres[i].gres_name);
 		} else {
 		}
 	}
@@ -515,13 +525,19 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value + "   # walltime");
 	
 	var procs;
-	sbatch("--ntasks=" + this.values.num_cores + "   # number of processor cores (i.e. tasks)");
+	sbatch("--ntaskms=" + this.values.nu_cores + "   # number of processor cores (i.e. tasks)");
 	if(this.inputs.single_node.checked) {
 		sbatch("--nodes=1   # number of nodes");
 	}
 
 	if(this.inputs.num_gpus.value > 0) {
-		sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
+		if(this.values.gres.length > 0) {
+			var gres = this.values.gres.join(",")
+			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value)
+		}else{
+			sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
+		}
+		// sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
 	}
 
 	if(this.values.features.length > 0) {
@@ -532,6 +548,11 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		var partitions = this.values.partitions.join(",");
 		sbatch("-p " + partitions + "   # partition(s)");
 	}
+
+	// if(this.values.gres.length > 0) {
+	// 	var gres = this.values.grees.join(",")
+	// 	sbatch("--gres")
+	// }
 
 	sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");
 
