@@ -55,8 +55,6 @@ var UVAScriptGen = function(div) {
 		/* You may want to dynamically generate features/partitions. See example HTML file */
 		features : {},
 		features_status : {},
-		gres: {},
-		gres_status: {}, 
 		partitions : {},
 		partitions_status : {},
 	};
@@ -223,36 +221,14 @@ UVAScriptGen.prototype.createForm = function(doc) {
 					partition_container.appendChild(new_checkbox);
 					partition_container.appendChild(name_span);
 					partitions_span.appendChild(partition_container);
-
-					new_checkbox.addEventListener('click', updateGresVisibility.bind(this))
 			}
 			form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 	}
 
-
-	// GREs section
-	this.inputs.gres = [];
-	console.log("show = " + this.settings.gres.show)
-	if (this.settings.gres.show){
-		var gres_span = this.newSpan("uva_sg_input_gres");
-		gres_span.style.display = "none";  // Initially hide the GRES section
-		for (var i in this.settings.gres.names){
-			var new_checkbox = this.newCheckbox({checked: 0});
-			new_checkbox.gres_name = this.settings.gres.names[i];
-			this.inputs.gres.push(new_checkbox);
-			var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
-			var gre_container = this.newSpan(null);
-			gre_container.className = "uva_sg_input_gre_container";
-			var name_span = this.newSpan(null, this.settings.gres.names[i], url);
-			name_span.className = "uva_sg_input_gre_name";
-			gre_container.appendChild(new_checkbox);
-			gre_container.appendChild(name_span);
-			gres_span.appendChild(gre_container);
-		}
-		form.appendChild(this.createLabelInputPair("GRES: ", gres_span));
-	}
-
-	// Advanced settings directly in the form (no collapsible section)
+	// Collapsible menu for other elements
+	var collapsibleDiv = document.createElement("div");
+	collapsibleDiv.className = "collapse";
+	collapsibleDiv.id = "advancedSettings";
 
 	this.inputs.single_node = this.newCheckbox({checked: 1});
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
@@ -275,77 +251,32 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
 	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
 
-	form.appendChild(document.createElement("br"));
-	form.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
-	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	form.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
-	form.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
-	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
-	form.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
-	form.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
-	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
-	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
+	collapsibleDiv.appendChild(document.createElement("br"));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
+	collapsibleDiv.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Need licenses? ", this.inputs.need_licenses));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Licenses: ", this.newSpan(null, "Name ", this.inputs.lic0_name, " Count ", this.inputs.lic0_count, br(), "Name ", this.inputs.lic1_name, " Count ", this.inputs.lic1_count, br(), "Name ", this.inputs.lic2_name, " Count ", this.inputs.lic2_count)));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
+	collapsibleDiv.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
-	
+	// Collapsible button
+	var collapsibleButton = document.createElement("button");
+	collapsibleButton.type = "button";
+	collapsibleButton.className = "btn btn-primary";
+	collapsibleButton.setAttribute("data-toggle", "collapse");
+	collapsibleButton.setAttribute("data-target", "#advancedSettings");
+	collapsibleButton.appendChild(document.createTextNode("Advanced Settings"));
+	form.appendChild(collapsibleButton);
+
+	form.appendChild(collapsibleDiv);
 
 	return form;
 };
-
-// function updateGresVisibility() {
-//     // Get all partition checkboxes
-//     // var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-//     // var gresContainer = document.getElementById("gresOptions");
-
-//     // // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-//     // var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-//     //     return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
-//     // });
-
-//     // // Show or hide the GRES options
-//     // gresContainer.style.display = showGres ? 'block' : 'none';
-
-// 	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-//     var gresContainer = document.getElementById("gresOptions");
-
-//     // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-//     var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-//         return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
-//     });
-
-// 	// Set the 'show' property of GRES based on the result
-// 	console.log(showGres)
-//     this.settings.gres.show = showGres;
-
-//     // Show or hide the GRES options
-//     //gresContainer.style.display = showGres ? 'block' : 'none';
-// 	var gresSection = document.getElementById("uva_sg_input_gres");
-//     if (gresSection) {
-//         gresSection.style.display = showGres ? 'block' : 'none';
-//     } else if (showGres) {
-//         // If gresSection does not exist and showGres is true, recreate the form
-//         this.containerDiv.innerHTML = '';
-//         this.containerDiv.appendChild(this.createForm());
-//     }
-	
-// }
-
-function updateGresVisibility(event){
-    // const uva_sg_input_gres = document.getElementById("uva_sg_input_gres");
-    // if (!uva_sg_input_gres) return;
-
-    // uva_sg_input_gres.style.display = event.target.checked ? "block" : "none";
-	console.log("update visibility")
-	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-    var gresSection = document.getElementById("uva_sg_input_gres");
-    
-    // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-    var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-        return checkbox.checked && (checkbox.partition_name === 'gpu' || checkbox.partition_name === 'interactive');
-    });
-
-    // Show or hide the GRES options
-    gresSection.style.display = showGres ? 'block' : 'none';
-}
 
 // Helper function to create label-input pair
 UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
@@ -390,15 +321,6 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	for(var i in this.inputs.partitions) {
 		if(this.inputs.partitions[i].checked){
 			this.values.partitions.push(this.inputs.partitions[i].partition_name);
-		} else {
-		}
-	}
-
-	// // add part for the gres
-	this.values.gres = [];
-	for(var i in this.inputs.gres) {
-		if(this.inputs.gres[i].checked){
-			this.values.gres.push(this.inputs.gres[i].gres_name);
 		} else {
 		}
 	}
@@ -525,19 +447,13 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value + "   # walltime");
 	
 	var procs;
-	sbatch("--ntaskms=" + this.values.nu_cores + "   # number of processor cores (i.e. tasks)");
+	sbatch("--ntasks=" + this.values.num_cores + "   # number of processor cores (i.e. tasks)");
 	if(this.inputs.single_node.checked) {
 		sbatch("--nodes=1   # number of nodes");
 	}
 
 	if(this.inputs.num_gpus.value > 0) {
-		if(this.values.gres.length > 0) {
-			var gres = this.values.gres.join(",")
-			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value)
-		}else{
-			sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
-		}
-		// sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
+		sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
 	}
 
 	if(this.values.features.length > 0) {
@@ -548,11 +464,6 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		var partitions = this.values.partitions.join(",");
 		sbatch("-p " + partitions + "   # partition(s)");
 	}
-
-	// if(this.values.gres.length > 0) {
-	// 	var gres = this.values.grees.join(",")
-	// 	sbatch("--gres")
-	// }
 
 	sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");
 
