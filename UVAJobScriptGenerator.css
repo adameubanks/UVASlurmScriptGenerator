@@ -84,3 +84,47 @@ pre {
 	display: flex;
 	align-items: baseline;
 }
+
+input[type="text"] {
+	background-color: #ffffff; /* Light background */
+	border: 1px solid #cccccc; /* Subtle border */
+	/* padding: 6px 9px; Comfortable padding */
+	border-radius: 4px; /* Rounded corners */
+	transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effects */
+}
+
+input[type="text"]:focus {
+	border-color: #4A90E2; /* Highlighted border color on focus */
+	box-shadow: 0 0 5px rgba(74, 144, 226, 0.5); /* Glowing effect on focus */
+	outline: none; /* Remove default focus outline */
+}
+
+/* Style for dropdowns */
+select {
+	background-color: #ffffff; /* Light background */
+	border: 1px solid #cccccc; /* Subtle border */
+	border-radius: 4px; /* Rounded corners */
+	transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effects */
+}
+
+select:focus {
+	border-color: #4A90E2; /* Highlighted border color on focus */
+	box-shadow: 0 0 5px rgba(74, 144, 226, 0.5); /* Glowing effect on focus */
+	outline: none; /* Remove default focus outline */
+}
+
+/* Custom style for checkboxes */
+input[type="checkbox"] {
+	accent-color: #4A90E2; /* Change the color of the checkbox */
+}
+
+/* Style for checkbox labels for a more custom look */
+.checkbox-label {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+	margin-right: 5px;
+}
