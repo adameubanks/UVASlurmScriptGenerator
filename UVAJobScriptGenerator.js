@@ -53,6 +53,7 @@ var UVAScriptGen = function(div) {
 			test : "test"
 		},
 		/* You may want to dynamically generate features/partitions. See example HTML file */
+		ntasks : 1, 
 		features : {},
 		features_status : {},
 		gres: {},
@@ -163,6 +164,10 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	// Job name
 	this.inputs.job_name = this.newInput({});
 	form.appendChild(this.createLabelInputPair("Job name: ", this.inputs.job_name));
+
+	//Number of tasks
+	this.inputs.num_tasks = this.newInput({});
+	form.appendChild(this.createLabelInputPair("Number of tasks: ", this.inputs.num_tasks))
 
 	// Number of processor cores across all nodes
 	this.inputs.num_cores = this.newInput({value: 1});
@@ -407,6 +412,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.is_preemptable = this.inputs.is_preemptable && this.inputs.is_preemptable.checked;
 	this.values.is_requeueable = this.inputs.is_requeueable && this.inputs.is_requeueable.checked;
 	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
+	this.values.num_tasks = this.inputs.num_tasks.value;
 	this.values.num_cores = this.inputs.num_cores.value;
 	if(this.inputs.single_node.checked)
 		this.values.nodes = 1;
@@ -523,9 +529,9 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	};
 	
 	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value + "   # walltime");
-	
+	sbatch("--ntasks=" + this.inputs.num_tasks.value + "    #number of tasks")
 	var procs;
-	sbatch("--ntaskms=" + this.values.nu_cores + "   # number of processor cores (i.e. tasks)");
+	sbatch("--ntasks-per-node=" + this.values.ntasks + "   # number of processor cores (i.e. tasks)");
 	if(this.inputs.single_node.checked) {
 		sbatch("--nodes=1   # number of nodes");
 	}
