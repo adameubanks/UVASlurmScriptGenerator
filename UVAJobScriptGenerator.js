@@ -60,6 +60,8 @@ var UVAScriptGen = function(div) {
 		gres_status: {}, 
 		partitions : {},
 		partitions_status : {},
+		constrains : {}, 
+		constrains_status: {}
 	};
 	return this;
 };
@@ -182,35 +184,35 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
 	form.appendChild(this.createLabelInputPair("Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
-	this.inputs.features = [];
-	if(this.settings.features.show) {
-		var features_span = this.newSpan("uva_sg_input_features");
-		for(var i in this.settings.features.names) {
-			var new_checkbox = this.newCheckbox({checked:0});
-			new_checkbox.feature_name = this.settings.features.names[i];
-			this.inputs.features.push(new_checkbox);
-			var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
-			var feature_container = this.newSpan(null);
-			feature_container.className = "uva_sg_input_feature_container";
-			var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
-			name_span.className = "uva_sg_input_feature_name";
-			feature_container.appendChild(name_span);
-			if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
-				var feature_status = this.settings.features_status[this.settings.features.names[i]];
-				feature_container.appendChild(
-					this.newSpan(	null,
-							"Nodes avail: ",
-							feature_status.nodes_free + "/" + feature_status.nodes_total,
-							br(),
-							"Cores avail: ",
-							feature_status.cores_free + "/" + feature_status.cores_total
-					)
-				);
-			}
-			features_span.appendChild(feature_container);
-		}
-		form.appendChild(this.createLabelInputPair("Features: ", features_span));
-	}
+	// this.inputs.features = [];
+	// if(this.settings.features.show) {
+	// 	var features_span = this.newSpan("uva_sg_input_features");
+	// 	for(var i in this.settings.features.names) {
+	// 		var new_checkbox = this.newCheckbox({checked:0});
+	// 		new_checkbox.feature_name = this.settings.features.names[i];
+	// 		this.inputs.features.push(new_checkbox);
+	// 		var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
+	// 		var feature_container = this.newSpan(null);
+	// 		feature_container.className = "uva_sg_input_feature_container";
+	// 		var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
+	// 		name_span.className = "uva_sg_input_feature_name";
+	// 		feature_container.appendChild(name_span);
+	// 		if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
+	// 			var feature_status = this.settings.features_status[this.settings.features.names[i]];
+	// 			feature_container.appendChild(
+	// 				this.newSpan(	null,
+	// 						"Nodes avail: ",
+	// 						feature_status.nodes_free + "/" + feature_status.nodes_total,
+	// 						br(),
+	// 						"Cores avail: ",
+	// 						feature_status.cores_free + "/" + feature_status.cores_total
+	// 				)
+	// 			);
+	// 		}
+	// 		features_span.appendChild(feature_container);
+	// 	}
+	// 	form.appendChild(this.createLabelInputPair("Features: ", features_span));
+	// }
 
 	// Partitions section
 	this.inputs.partitions = [];
@@ -237,7 +239,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 	// GREs section
 	this.inputs.gres = [];
-	console.log("show = " + this.settings.gres.show)
+	// console.log("show = " + this.settings.gres.show)
 	if (this.settings.gres.show){
 		var gres_span = this.newSpan("uva_sg_input_gres");
 		gres_span.style.display = "none";  // Initially hide the GRES section
@@ -253,8 +255,30 @@ UVAScriptGen.prototype.createForm = function(doc) {
 			gre_container.appendChild(new_checkbox);
 			gre_container.appendChild(name_span);
 			gres_span.appendChild(gre_container);
+			new_checkbox.addEventListener('click', updateConstrainVisibility.bind(this))
 		}
-		form.appendChild(this.createLabelInputPair("GRES: ", gres_span));
+		form.appendChild(this.createLabelInputPair("gres: ", gres_span));
+	}
+	// Constrain section
+	this.inputs.constrains = [];
+	if(this.settings.constrains.show){
+		var constrains_span = this.newSpan("uva_sg_input_constrains");
+		constrains_span.style.display = "none";
+		for (var i in this.settings.constrains.names){
+			console.log("index: "  + i);
+			var new_checkbox = this.newCheckbox({checked: 0});
+			new_checkbox.constrains_name = this.settings.constrains.names[i]
+			this.inputs.constrains.push(new_checkbox);
+			var url = this.newA(this.settings.constrains.info_base_url + this.settings.constrains[i], "?");
+			var constrain_container = this.newSpan(null);
+			constrain_container.className = "uva_sg_input_constrain_container";
+			var name_span = this.newSpan(null, this.settings.constrains.names[i], url);
+			name_span.className = "uva_sg_input_constrain_name";
+			constrain_container.appendChild(new_checkbox);
+			constrain_container.appendChild(name_span);
+			constrains_span.appendChild(constrain_container);
+		}
+		form.appendChild(this.createLabelInputPair("Constrain: ", constrains_span));
 	}
 
 	// Advanced settings directly in the form (no collapsible section)
@@ -296,43 +320,21 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	return form;
 };
 
-// function updateGresVisibility() {
-//     // Get all partition checkboxes
-//     // var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-//     // var gresContainer = document.getElementById("gresOptions");
+function updateConstrainVisibility(event){
+	var greCheckboxes = document.querySelectorAll(".uva_sg_input_gre_container input[type='checkbox']");
+    var constrainsSection = document.getElementById("uva_sg_input_constrains");
+    
+    // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
+    // var showConstrains = Array.from(greCheckboxes).some(checkbox => {
+    //     return checkbox.checked;
+    // });
 
-//     // // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-//     // var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-//     //     return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
-//     // });
+	var showConstrains = Array.from(greCheckboxes).some(checkbox => checkbox.checked);
 
-//     // // Show or hide the GRES options
-//     // gresContainer.style.display = showGres ? 'block' : 'none';
-
-// 	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-//     var gresContainer = document.getElementById("gresOptions");
-
-//     // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-//     var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-//         return checkbox.checked && (checkbox.partition_name === 'GPU' || checkbox.partition_name === 'Interactive');
-//     });
-
-// 	// Set the 'show' property of GRES based on the result
-// 	console.log(showGres)
-//     this.settings.gres.show = showGres;
-
-//     // Show or hide the GRES options
-//     //gresContainer.style.display = showGres ? 'block' : 'none';
-// 	var gresSection = document.getElementById("uva_sg_input_gres");
-//     if (gresSection) {
-//         gresSection.style.display = showGres ? 'block' : 'none';
-//     } else if (showGres) {
-//         // If gresSection does not exist and showGres is true, recreate the form
-//         this.containerDiv.innerHTML = '';
-//         this.containerDiv.appendChild(this.createForm());
-//     }
-	
-// }
+    // Show or hide the GRES options
+    constrainsSection.style.display = showConstrains ? 'block' : 'none';
+	console.log("check constrain: " + constrainsSection.style.display);
+}
 
 function updateGresVisibility(event){
     // const uva_sg_input_gres = document.getElementById("uva_sg_input_gres");
@@ -350,6 +352,7 @@ function updateGresVisibility(event){
 
     // Show or hide the GRES options
     gresSection.style.display = showGres ? 'block' : 'none';
+	console.log("check gres: " + gresSection.style.display)
 }
 
 // Helper function to create label-input pair
@@ -405,6 +408,16 @@ UVAScriptGen.prototype.retrieveValues = function() {
 		if(this.inputs.gres[i].checked){
 			this.values.gres.push(this.inputs.gres[i].gres_name);
 		} else {
+		}
+	}
+
+	//add constrain
+	this.values.constrains = [];
+	for(var i in this.inputs.constrains){
+		if(this.inputs.constrains[i].checked){
+			this.values.constrains.push(this.inputs.constrains[i].constrains_name);
+		}else{
+
 		}
 	}
 
@@ -537,6 +550,7 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	}
 
 	if(this.inputs.num_gpus.value > 0) {
+		console.log("check gres")
 		if(this.values.gres.length > 0) {
 			var gres = this.values.gres.join(",")
 			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value)
@@ -544,6 +558,14 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 			sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
 		}
 		// sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
+	}
+
+	if(this.values.gres.length > 0) {
+		var gres = this.values.gres.join(",")
+		if(this.values.constrains.length > 0){
+			var constrains = this.values.constrains.join(",")
+			sbatch("--constrains=" + gres + "_" + constrains);
+		}
 	}
 
 	if(this.values.features.length > 0) {
