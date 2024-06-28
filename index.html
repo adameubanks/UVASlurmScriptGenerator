@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Job Script Generator</title>
+    <title>Slurm Job Script Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="UVAJobScriptGenerator.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -12,37 +12,27 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Job Script Generator</h1>
+    <h1 class="mb-4">Slurm Job Script Generator</h1>
     <div id="UVAJobScriptGenerator"></div>
     <script type="text/javascript">
         var uva_script_gen = new UVAScriptGen(document.getElementById("UVAJobScriptGenerator"));
-        // uva_script_gen.settings.features = {
-        //     names: ["rivanna","afton"],
-        //     //info_base_url: "/documentation/features.html#",
-        //     show: true
-        // };
-        
+
         uva_script_gen.settings.partitions = {
             names: ["standard", "parallel", "interactive", "gpu"],
-            // info_base_url: "/documentation/partitions.php?part=",
             show: true
         };
 
         uva_script_gen.settings.gres = {
             names: ["RTX3090", "RTX2080", "a6000", "a40", "a100",  "v100"],
-            // info_base_url:  leave for future
             show: true
         };
 
-        uva_script_gen.settings.constrains = {
+        uva_script_gen.settings.constraints = {
             names: ["40gb", "80gb"], 
             show: true
         }
         
-        
         uva_script_gen.init();
-
-    
     </script>
 </div>
 </body>

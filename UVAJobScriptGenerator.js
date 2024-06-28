@@ -5,15 +5,10 @@ var UVAScriptGen = function(div) {
 	this.inputs.features = {};
 	this.formrows = [];
 	this.settings = {
-		script_formats : [ ["slurm", "Slurm"], ["pbs", "PBS"] ],
+		script_formats : [ ["slurm", "Slurm"]],
 		defaults : {
 			email_address : "netid@virginia.edu",
 		},
-		qos : {
-			preemptable : "standby",
-			test : "test"
-		},
-		/* You may want to dynamically generate features/partitions. See example HTML file */
 		ntasks : 1, 
 		features : {},
 		features_status : {},
@@ -21,8 +16,8 @@ var UVAScriptGen = function(div) {
 		gres_status: {}, 
 		partitions : {},
 		partitions_status : {},
-		constrains : {}, 
-		constrains_status: {}
+		constraint : {}, 
+		constraint_status: {}
 	};
 	return this;
 };
@@ -33,20 +28,37 @@ UVAScriptGen.prototype.newCheckbox = function(args) {
 	newEl.type = "checkbox";
 	var formrows = this.formrows;
 	if(args.checked)
-			newEl.checked = true;
+		newEl.checked = true;
 	if(args.toggle) {
-			newEl.onclick = newEl.onchange = function () {
-					if(formrows[args.toggle]) {
-							formrows[args.toggle].style.display = newEl.checked ? "" : "none";
-					}
-					tthis.updateJobscript();
-			};
+		newEl.onclick = newEl.onchange = function () {
+			if(formrows[args.toggle]) {
+				formrows[args.toggle].style.display = newEl.checked ? "" : "none";
+			}
+			tthis.updateJobscript();
+		};
 	}
 	else {
-			newEl.onclick = newEl.onchange = function () {
-					tthis.updateJobscript();
-			};
+		newEl.onclick = newEl.onchange = function () {
+				tthis.updateJobscript();
+		};
 	}
+	return newEl;
+}
+
+UVAScriptGen.prototype.newRadio = function(args) {
+	var tthis = this;
+	var newEl = document.createElement("input");
+	newEl.type = "radio";
+	if(args.name)
+		newEl.name = args.name;
+	if(args.checked)
+		newEl.checked = true;
+	if(args.value)
+		newEl.value = args.value;
+	
+	newEl.onclick = newEl.onchange = function () {
+		tthis.updateJobscript();
+	};
 	return newEl;
 }
 
@@ -110,22 +122,7 @@ UVAScriptGen.prototype.newA = function(url, body) {
 }
 
 UVAScriptGen.prototype.createForm = function(doc) {
-	function br() {
-			return document.createElement("br");
-	}
-
-	function newHeaderRow(text) {
-			var headerDiv = document.createElement("div");
-			var header = document.createElement("h3");
-			header.appendChild(document.createTextNode(text));
-			headerDiv.appendChild(header);
-			return headerDiv;
-	}
-
 	form = document.createElement("form");
-
-	// Main form elements
-	form.appendChild(newHeaderRow("Parameters"));
 
 	// Job name
 	this.inputs.job_name = this.newInput({});
@@ -146,116 +143,97 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
-	form.appendChild(this.createLabelInputPair("Memory per processor core: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
-
-	// this.inputs.features = [];
-	// if(this.settings.features.show) {
-	// 	var features_span = this.newSpan("uva_sg_input_features");
-	// 	for(var i in this.settings.features.names) {
-	// 		var new_checkbox = this.newCheckbox({checked:0});
-	// 		new_checkbox.feature_name = this.settings.features.names[i];
-	// 		this.inputs.features.push(new_checkbox);
-	// 		var url = this.newA(this.settings.features.info_base_url + this.settings.features.names[i], "?");
-	// 		var feature_container = this.newSpan(null);
-	// 		feature_container.className = "uva_sg_input_feature_container";
-	// 		var name_span = this.newSpan("uva_sg_input_feature_" + new_checkbox.feature_name, new_checkbox, this.settings.features.names[i] + " [", url, "]");
-	// 		name_span.className = "uva_sg_input_feature_name";
-	// 		feature_container.appendChild(name_span);
-	// 		if(this.settings.features_status && this.settings.features_status[this.settings.features.names[i]]) {
-	// 			var feature_status = this.settings.features_status[this.settings.features.names[i]];
-	// 			feature_container.appendChild(
-	// 				this.newSpan(	null,
-	// 						"Nodes avail: ",
-	// 						feature_status.nodes_free + "/" + feature_status.nodes_total,
-	// 						br(),
-	// 						"Cores avail: ",
-	// 						feature_status.cores_free + "/" + feature_status.cores_total
-	// 				)
-	// 			);
-	// 		}
-	// 		features_span.appendChild(feature_container);
-	// 	}
-	// 	form.appendChild(this.createLabelInputPair("Features: ", features_span));
-	// }
+	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
 
 	// Partitions section
 	this.inputs.partitions = [];
-	if (this.settings.partitions.show) {
-			var partitions_span = this.newSpan("uva_sg_input_partitions");
-			for (var i in this.settings.partitions.names) {
-					var new_checkbox = this.newCheckbox({checked: 0});
-					new_checkbox.partition_name = this.settings.partitions.names[i];
-					this.inputs.partitions.push(new_checkbox);
-					var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
-					var partition_container = this.newSpan(null);
-					partition_container.className = "uva_sg_input_partition_container";
-					var name_span = this.newSpan(null, this.settings.partitions.names[i], url);
-					name_span.className = "uva_sg_input_partition_name";
-					partition_container.appendChild(new_checkbox);
-					partition_container.appendChild(name_span);
-					partitions_span.appendChild(partition_container);
+	var partitions_span = this.newSpan("uva_sg_input_partitions");
+	var radioGroupName = "partitionOptions";
+	for (var i in this.settings.partitions.names) {
+		var new_radio = this.newRadio({
+			name: radioGroupName,
+			checked: i == 0 ? true : false,
+			value: this.settings.partitions.names[i]
+		});
+		new_radio.partition_name = this.settings.partitions.names[i];
+		this.inputs.partitions.push(new_radio);
+		var url = this.newA(this.settings.partitions.info_base_url + this.settings.partitions.names[i], "?");
+		var partition_container = this.newSpan(null);
+		partition_container.className = "uva_sg_input_partition_container";
+		var name_span = this.newSpan(null, this.settings.partitions.names[i], url);
+		name_span.className = "uva_sg_input_partition_name";
+		partition_container.appendChild(new_radio);
+		partition_container.appendChild(name_span);
+		partitions_span.appendChild(partition_container);
 
-					new_checkbox.addEventListener('click', updateGresVisibility.bind(this))
-			}
-			form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
+		new_radio.addEventListener('change', function() {
+			updateVisibility();
+		});
 	}
+	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 
-
-	// GRES section
+	// GRES
 	this.inputs.gres = [];
-	// console.log("show = " + this.settings.gres.show)
-	if (this.settings.gres.show){
-		var gres_span = this.newSpan("uva_sg_input_gres");
-		gres_span.style.display = "none";  // Initially hide the GRES section
-		for (var i in this.settings.gres.names){
-			var new_checkbox = this.newCheckbox({checked: 0});
-			new_checkbox.gres_name = this.settings.gres.names[i];
-			this.inputs.gres.push(new_checkbox);
-			var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
-			var gre_container = this.newSpan(null);
-			gre_container.className = "uva_sg_input_gre_container";
-			var name_span = this.newSpan(null, this.settings.gres.names[i], url);
-			name_span.className = "uva_sg_input_gre_name";
-			gre_container.appendChild(new_checkbox);
-			gre_container.appendChild(name_span);
-			gres_span.appendChild(gre_container);
-			new_checkbox.addEventListener('click', updateConstrainVisibility.bind(this))
-		}
-		form.appendChild(this.createLabelInputPair("gres: ", gres_span));
-	}
-	// Constrain section
-	this.inputs.constrains = [];
-	if(this.settings.constrains.show){
-		var constrains_span = this.newSpan("uva_sg_input_constrains");
-		constrains_span.style.display = "none";
-		for (var i in this.settings.constrains.names){
-			console.log("index: "  + i);
-			var new_checkbox = this.newCheckbox({checked: 0});
-			new_checkbox.constrains_name = this.settings.constrains.names[i]
-			this.inputs.constrains.push(new_checkbox);
-			var url = this.newA(this.settings.constrains.info_base_url + this.settings.constrains[i], "?");
-			var constrain_container = this.newSpan(null);
-			constrain_container.className = "uva_sg_input_constrain_container";
-			var name_span = this.newSpan(null, this.settings.constrains.names[i], url);
-			name_span.className = "uva_sg_input_constrain_name";
-			constrain_container.appendChild(new_checkbox);
-			constrain_container.appendChild(name_span);
-			constrains_span.appendChild(constrain_container);
-		}
-		form.appendChild(this.createLabelInputPair("Constraint: ", constrains_span));
-	}
+	var gres_span = this.newSpan("uva_sg_input_gres");
+	var gres_label = this.createLabelInputPair("GRES: ", gres_span);
+	gres_label.style.display = "none";
+	var gresRadioGroupName = "gresOptions";
+	for (var i in this.settings.gres.names){
+		var new_radio = this.newRadio({
+			name: gresRadioGroupName,
+			checked: false,
+			value: this.settings.gres.names[i]
+		});
+		new_radio.gres_name = this.settings.gres.names[i];
+		this.inputs.gres.push(new_radio);
+		var url = this.newA(this.settings.gres.info_base_url + this.settings.gres.names[i], "?");
+		var gres_container = this.newSpan(null);
+		gres_container.className = "uva_sg_input_gres_container";
+		var name_span = this.newSpan(null, this.settings.gres.names[i], url);
+		name_span.className = "uva_sg_input_gres_name";
+		gres_container.appendChild(new_radio);
+		gres_container.appendChild(name_span);
+		gres_span.appendChild(gres_container);
 
-	// Advanced settings directly in the form (no collapsible section)
+		new_radio.addEventListener('change', function() {
+			updateVisibility();
+		});
+	}
+	form.appendChild(gres_label);
+
+	// Constraint
+	this.inputs.constraint = [];
+	var constraint_span = this.newSpan("uva_sg_input_constraint");
+	var constraint_label = this.createLabelInputPair("Constraint: ", constraint_span);
+	constraint_label.style.display = "none";
+	var constraintRadioGroupName = "constraintOptions";
+	for (var i in this.settings.constraints.names){
+		var new_radio = this.newRadio({
+			name: constraintRadioGroupName,
+			checked: false,
+			value: this.settings.constraints.names[i]
+		});
+		new_radio.constraint_name = this.settings.constraints.names[i];
+		this.inputs.constraint.push(new_radio);
+		var url = this.newA(this.settings.constraints.info_base_url + this.settings.constraints.names[i], "?");
+		var constraint_container = this.newSpan(null);
+		constraint_container.className = "uva_sg_input_constraint_container";
+		var name_span = this.newSpan(null, this.settings.constraints.names[i], url);
+		name_span.className = "uva_sg_input_constraint_name";
+		constraint_container.appendChild(new_radio);
+		constraint_container.appendChild(name_span);
+		constraint_span.appendChild(constraint_container);
+	}
+	form.appendChild(constraint_label);
+
 
 	this.inputs.single_node = this.newCheckbox({checked: 1});
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
 	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
 	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
-	this.inputs.is_test = this.newCheckbox({checked: 0});
-	this.inputs.is_preemptable = this.newCheckbox({checked: 0, toggle: "is_requeueable"});
-	this.inputs.is_requeueable = this.newCheckbox({checked: 0});
+	this.inputs.is_requeueable = this.newCheckbox({checked: 1});
 	this.inputs.in_group = this.newCheckbox({checked: 0, toggle: "group_name"});
-	this.inputs.group_name = this.newInput({value: "MYGROUPNAME"});
+	this.inputs.group_name = this.newInput({value: ""});
 	this.inputs.need_licenses = this.newCheckbox({checked: 0, toggle: "licenses"});
 	this.inputs.lic0_name = this.newInput({});
 	this.inputs.lic0_count = this.newInput({size: 3, maxLength: 4});
@@ -268,61 +246,49 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
 	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
 
-	form.appendChild(document.createElement("br"));
 	form.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
 	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	form.appendChild(this.createLabelInputPair("Job is a test job: ", this.inputs.is_test));
-	form.appendChild(this.createLabelInputPair("Job is preemptable: ", this.inputs.is_preemptable));
 	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
-	form.appendChild(this.createLabelInputPair("I am in a file sharing group and my group members need to read/modify my output files: ", this.inputs.in_group));
-	form.appendChild(this.createLabelInputPair("Group name (case sensitive): ", this.inputs.group_name));
+	form.appendChild(this.createLabelInputPair("Allocation name (case sensitive): ", this.inputs.group_name));
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
-
-	
 
 	return form;
 };
 
-function updateConstrainVisibility(event){
-	var greCheckboxes = document.querySelectorAll(".uva_sg_input_gre_container input[type='checkbox']");
-    var constrainsSection = document.getElementById("uva_sg_input_constrains");
-    
-    // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-    // var showConstrains = Array.from(greCheckboxes).some(checkbox => {
-    //     return checkbox.checked;
-    // });
+function updateVisibility(event){
+	// update gres visibility
+  var partitions = document.querySelectorAll(".uva_sg_input_partition_container input[type='radio']");
+  var gresSection = document.getElementById("GRES");
 
-	var showConstrains = Array.from(greCheckboxes).some(checkbox => checkbox.checked);
+  var checkedPartition = Array.from(partitions).find(radio => radio.checked).value;
+  var showGRES = checkedPartition && (checkedPartition === 'gpu' || checkedPartition === 'interactive');
 
-    // Show or hide the GRES options
-    constrainsSection.style.display = showConstrains ? 'block' : 'none';
-	console.log("check constrain: " + constrainsSection.style.display);
-}
+  gresSection.style.display = showGRES ? 'block' : 'none';
 
-function updateGresVisibility(event){
-    // const uva_sg_input_gres = document.getElementById("uva_sg_input_gres");
-    // if (!uva_sg_input_gres) return;
+	// update constraint visibility
+	var gres = document.querySelectorAll(".uva_sg_input_gres_container input[type='radio']");
+  var constraintSection = document.getElementById("Constraint");
+  
+	var checkedGRES = Array.from(gres).find(radio => radio.checked).value;
+  var showConstraint = checkedGRES && checkedGRES === 'a100';
 
-    // uva_sg_input_gres.style.display = event.target.checked ? "block" : "none";
-	console.log("update visibility")
-	var partitionCheckboxes = document.querySelectorAll(".uva_sg_input_partition_container input[type='checkbox']");
-    var gresSection = document.getElementById("uva_sg_input_gres");
-    
-    // Check if any of the partition checkboxes are checked and are 'GPU' or 'Interactive'
-    var showGres = Array.from(partitionCheckboxes).some(checkbox => {
-        return checkbox.checked && (checkbox.partition_name === 'gpu' || checkbox.partition_name === 'interactive');
-    });
+  constraintSection.style.display = (showConstraint && showGRES) ? 'block' : 'none';
 
-    // Show or hide the GRES options
-    gresSection.style.display = showGres ? 'block' : 'none';
-	console.log("check gres: " + gresSection.style.display)
+	if (!showConstraint || !showGRES) {
+		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
+		constraintRadios.forEach(radio => {
+			radio.checked = false;
+		});
+	}
+
 }
 
 // Helper function to create label-input pair
 UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
 	var div = document.createElement("div");
 	div.className = "input-pair";
+	div.id = labelText.slice(0, -2);
 	var label = document.createElement("label");
 	label.className = "input-label";
 	label.appendChild(document.createTextNode(labelText));
@@ -345,7 +311,6 @@ UVAScriptGen.prototype.newSpan = function(id, ...children) {
 	return span;
 };
 
-
 UVAScriptGen.prototype.retrieveValues = function() {
 	var jobnotes = [];
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
@@ -366,7 +331,7 @@ UVAScriptGen.prototype.retrieveValues = function() {
 		}
 	}
 
-	// // add part for the gres
+	// add gres
 	this.values.gres = [];
 	for(var i in this.inputs.gres) {
 		if(this.inputs.gres[i].checked){
@@ -375,18 +340,16 @@ UVAScriptGen.prototype.retrieveValues = function() {
 		}
 	}
 
-	//add constrain
-	this.values.constrains = [];
-	for(var i in this.inputs.constrains){
-		if(this.inputs.constrains[i].checked){
-			this.values.constrains.push(this.inputs.constrains[i].constrains_name);
+	//add constraint
+	this.values.constraint = [];
+	for(var i in this.inputs.constraint){
+		if(this.inputs.constraint[i].checked){
+			this.values.constraint.push(this.inputs.constraint[i].constraint_name);
 		}else{
 
 		}
 	}
 
-	this.values.is_test = this.inputs.is_test.checked;
-	this.values.is_preemptable = this.inputs.is_preemptable && this.inputs.is_preemptable.checked;
 	this.values.is_requeueable = this.inputs.is_requeueable && this.inputs.is_requeueable.checked;
 	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
 	this.values.num_tasks = this.inputs.num_tasks.value;
@@ -414,90 +377,8 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.jobNotesDiv.innerHTML = jobnotes.join("<br/>\n");
 };
 
-UVAScriptGen.prototype.generateScriptPBS = function () {
-	this.retrieveValues();
-
-	var scr = "#!/bin/bash\n\n#Submit this script with: qsub thefilename\n\n";
-	var walltime = "walltime=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value;
-	var procs = "procs=" + this.values.num_cores;
-
-	if(this.inputs.single_node.checked)
-		procs = "nodes=1:ppn=" + this.values.num_cores;
-
-	if(this.inputs.num_gpus.value > 0)
-		procs += ":gpus=" + this.inputs.num_gpus.value;
-	var features = "";
-
-	if(this.values.features.length > 0)
-		features = ",feature='" + this.values.features.join(",") + "'";
-	var qos = "";
-
-	if(this.inputs.is_preemptable.checked)
-		qos = ",qos=" + this.settings.qos.preemptable;
-	else if(this.inputs.is_test.checked)
-		qos = ",qos=" + this.settings.qos.test;
-	scr += "#PBS -l " + procs + features + ",pmem=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value + "," + walltime + qos + "\n";
-
-	if(this.values.partitions.length > 0)
-		scr += "#PBS -q " + this.values.partitions[0] + "\n";
-	
-	if(this.inputs.job_name.value != "") {
-		scr += "#PBS -N " + this.inputs.job_name.value + "\n";
-	}
-	if(this.inputs.need_licenses.checked) {
-		var lics = new Array();
-		var show_lics = 0;
-		if(this.inputs.lic0_name.value != "" && this.inputs.lic0_count.value > 0) {
-			lics.push(this.inputs.lic0_name.value + "+" + this.inputs.lic0_count.value);
-			show_lics = 1;
-		}
-		if(this.inputs.lic1_name.value != "" && this.inputs.lic1_count.value > 0) {
-			lics.push(this.inputs.lic1_name.value + "+" + this.inputs.lic1_count.value);
-			show_lics = 1;
-		}
-		if(this.inputs.lic2_name.value != "" && this.inputs.lic2_count.value > 0) {
-			lics.push(this.inputs.lic2_name.value + "+" + this.inputs.lic2_count.value);
-			show_lics = 1;
-		}
-		if(show_lics)
-			scr += "#PBS -W x=GRES:" + lics.join("%") + "   #format: lic1_name+lic1_count%lic2_name+lic2_count\n";
-	}
-
-	if(this.inputs.email_begin.checked || this.inputs.email_end.checked || this.inputs.email_abort.checked) {
-		var emailletters = [];
-		if(this.inputs.email_begin.checked)
-			emailletters.push("b");
-		if(this.inputs.email_end.checked)
-			emailletters.push("e");
-		if(this.inputs.email_abort.checked)
-			emailletters.push("a");
-		scr += "#PBS -m " + emailletters.join("") + "\n";
-		scr += "#PBS -M " + this.inputs.email_address.value + "\n";
-		if(this.inputs.email_address.value == this.settings.defaults.email_address)
-			scr += "echo \"$USER: Please change the -M option to your real email address before submitting. Then remove this line.\"; exit 1\n";
-	}
-
-	var requeueable = this.inputs.is_requeueable.checked ? "#PBS -r y    # Job can be requeued if it is preempted\n" : "";
-	scr += requeueable;
-
-	if(this.inputs.in_group.checked) {
-		scr += "\n# Set the output permissions on the .oJOBID and .eJOBID files to be 0660 (owner and group can read/write but not others)\n";
-		scr += "#PBS -W umask=0007\n";
-		scr += "\n# Set the group ownership on the .oJOBID and .eJOBID files to be '" + this.inputs.group_name.value +"'\n";
-		scr += "#PBS -W group_list=" + this.inputs.group_name.value + "\n";
-		scr += "\n# Set the output permissions on files written from my script to be 0660 and directories to be 0770 (owner and group can read/write but not others)\n";
-		scr += "umask 0007\n";
-	}
-	scr += "\n# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE\n";
-
-	return scr;
-};
-
 
 UVAScriptGen.prototype.generateScriptSLURM = function () {
-	var pbscompat = true;
-	var pmemmb;
-	var procs;
 	var features = "";
 
 	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch thefilename\n\n";
@@ -521,14 +402,13 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		}else{
 			sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
 		}
-		// sbatch("--gres=gpu:" + this.inputs.num_gpus.value);
 	}
 
 	if(this.values.gres.length > 0) {
 		var gres = this.values.gres.join(",")
-		if(this.values.constrains.length > 0){
-			var constrains = this.values.constrains.join(",")
-			sbatch("--constrains=" + gres + "_" + constrains);
+		if(this.values.constraint.length > 0){
+			var constraint = this.values.constraint.join(",")
+			sbatch("--constraint=" + gres + "_" + constraint);
 		}
 	}
 
@@ -540,11 +420,6 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		var partitions = this.values.partitions.join(",");
 		sbatch("-p " + partitions + "   # partition(s)");
 	}
-
-	// if(this.values.gres.length > 0) {
-	// 	var gres = this.values.grees.join(",")
-	// 	sbatch("--gres")
-	// }
 
 	sbatch("--mem-per-cpu=" + this.inputs.mem_per_core.value + this.inputs.mem_units.value.substr(0,1) + "   # memory per CPU core");
 
@@ -563,10 +438,7 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		if(this.inputs.email_abort.checked)
 			sbatch("--mail-type=FAIL");
 	}
-	if(this.inputs.is_preemptable.checked)
-		sbatch("--qos=" + this.settings.qos.preemptable);
-	else if(this.inputs.is_test.checked)
-		sbatch("--qos=" + this.settings.qos.test);
+
 	if(this.inputs.is_requeueable.checked)
 		sbatch("--requeue   #requeue when preempted and on node failure");
 	if(this.inputs.need_licenses.checked) {
@@ -617,12 +489,6 @@ UVAScriptGen.prototype.init = function() {
 	scriptHeader.appendChild(document.createTextNode("Job Script"));
 	this.containerDiv.appendChild(scriptHeader);
 
-	this.scriptFormatSelectorDiv = document.createElement("div");
-	this.scriptFormatSelectorDiv.id = "uva_sg_script_format_selector_container";
-	this.script_format_selector = this.newSelect({ options : this.settings.script_formats });
-	this.script_format_selector.id = "uva_sg_script_format_selector";
-	this.containerDiv.appendChild(this.newSpan("uva_sg_script_format_selector_container", "Script format:", this.script_format_selector));
-
 	this.form = this.createForm();
 	this.inputDiv.appendChild(this.form);
 
@@ -638,15 +504,6 @@ UVAScriptGen.prototype.init = function() {
 };
 
 UVAScriptGen.prototype.toJobScript = function() {
-	var schedformat = uva_sg_script_format_selector.options[uva_sg_script_format_selector.selectedIndex].value;
-	var scr;
-	switch(schedformat) {
-		case "slurm" :
-			scr = this.generateScriptSLURM();
-			break;
-		case "pbs" :
-			scr = this.generateScriptPBS();
-			break;
-	}
+	var scr = this.generateScriptSLURM();
 	this.jobScriptDiv.innerHTML = "<pre><code>" + scr + "</code></pre>";
 };
