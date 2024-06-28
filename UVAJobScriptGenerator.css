@@ -85,7 +85,7 @@ pre {
 	align-items: baseline;
 }
 
-input[type="text"] {
+input[type="text"], input[type="number"] {
 	background-color: #ffffff; /* Light background */
 	border: 1px solid #cccccc; /* Subtle border */
 	/* padding: 6px 9px; Comfortable padding */
@@ -93,7 +93,7 @@ input[type="text"] {
 	transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effects */
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus, input[type="number"]:focus {
 	border-color: #4A90E2; /* Highlighted border color on focus */
 	box-shadow: 0 0 5px rgba(74, 144, 226, 0.5); /* Glowing effect on focus */
 	outline: none; /* Remove default focus outline */
