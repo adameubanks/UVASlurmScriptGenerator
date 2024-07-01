@@ -106,6 +106,18 @@ UVAScriptGen.prototype.newA = function(url, body) {
 	return a;
 }
 
+UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
+	var div = document.createElement("div");
+	div.className = "input-pair";
+	div.id = labelText.slice(0, -2);
+	var label = document.createElement("label");
+	label.className = "input-label";
+	label.appendChild(document.createTextNode(labelText));
+	div.appendChild(label);
+	div.appendChild(inputElement);
+	return div;
+};
+
 UVAScriptGen.prototype.createForm = function(doc) {
 	form = document.createElement("form");
 
@@ -211,7 +223,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
 	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
 	this.inputs.requeue = this.newCheckbox({checked: 1});
-	this.inputs.group_name = this.newInput({value: ""});
+	this.inputs.group_name = this.newInput({value: "MyGroup"});
 	this.inputs.email_begin = this.newCheckbox({checked: 0});
 	this.inputs.email_end = this.newCheckbox({checked: 0});
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
@@ -219,7 +231,7 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
 	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
-	form.appendChild(this.createLabelInputPair("Allocation name (case sensitive): ", this.inputs.group_name));
+	form.appendChild(this.createLabelInputPair("Allocation name (required): ", this.inputs.group_name));
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
 
@@ -259,33 +271,6 @@ function updateVisibility(event){
 	}
 }
 
-// Helper function to create label-input pair
-UVAScriptGen.prototype.createLabelInputPair = function(labelText, inputElement) {
-	var div = document.createElement("div");
-	div.className = "input-pair";
-	div.id = labelText.slice(0, -2);
-	var label = document.createElement("label");
-	label.className = "input-label";
-	label.appendChild(document.createTextNode(labelText));
-	div.appendChild(label);
-	div.appendChild(inputElement);
-	return div;
-};
-
-// Helper function to create a span element with multiple children
-UVAScriptGen.prototype.newSpan = function(id, ...children) {
-	var span = document.createElement("span");
-	if (id) span.id = id;
-	for (var child of children) {
-			if (typeof child === "string") {
-					span.appendChild(document.createTextNode(child));
-			} else {
-					span.appendChild(child);
-			}
-	}
-	return span;
-};
-
 UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
 
@@ -295,14 +280,12 @@ UVAScriptGen.prototype.retrieveValues = function() {
 			this.values.partitions.push(this.inputs.partitions[i].partition_name);
 		}
 	}
-
 	this.values.gres = [];
 	for(var i in this.inputs.gres) {
 		if(this.inputs.gres[i].checked){
 			this.values.gres.push(this.inputs.gres[i].gres_name);
 		}
 	}
-
 	this.values.constraint = [];
 	for(var i in this.inputs.constraint){
 		if(this.inputs.constraint[i].checked){
@@ -310,13 +293,16 @@ UVAScriptGen.prototype.retrieveValues = function() {
 		}
 	}
 
-	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
-	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
 	this.values.num_nodes = this.inputs.num_nodes.value;
 	this.values.tasks_per_node = this.inputs.tasks_per_node.value;
-
 	this.values.gpus = this.inputs.num_gpus.value
+
+	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
+	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
+
 	this.values.job_name = this.inputs.job_name.value;
+	this.values.group_name = this.inputs.group_name.value;
+
 	this.values.sendemail = {};
 	this.values.sendemail.begin = this.inputs.email_begin.checked;
 	this.values.sendemail.end = this.inputs.email_end.checked;
@@ -328,6 +314,8 @@ UVAScriptGen.prototype.retrieveValues = function() {
 		alert("Are you crazy? That is way too much RAM!");
 	if(this.values.walltime_in_minutes > 86400*7)
 		alert("Global maximum walltime is 7 days");
+	if(this.values.group_name == "")
+		alert("Please enter an allocation name");
 };
 
 UVAScriptGen.prototype.generateScriptSLURM = function () {
@@ -412,12 +400,44 @@ UVAScriptGen.prototype.init = function() {
 
 	this.jobScriptDiv = document.createElement("div");
 	this.jobScriptDiv.id = "uva_sg_jobscript";
+	this.jobScriptDiv.style.position = "relative";
 	this.containerDiv.appendChild(this.jobScriptDiv);
+
+	var copyButton = document.createElement("button");
+	copyButton.id = "copyButton";
+	copyIcon = document.createElement("i");
+	copyIcon.className = "fa fa-copy";
+	copyButton.appendChild(copyIcon);
+	this.jobScriptDiv.appendChild(copyButton);
+
+
+	var pre = document.createElement("pre");
+	var code = document.createElement("code");
+	this.jobScriptDiv.appendChild(pre);
+	this.jobScriptDiv.querySelector("pre").appendChild(code);
 
 	this.updateJobscript();
 };
 
 UVAScriptGen.prototype.toJobScript = function() {
 	var scr = this.generateScriptSLURM();
-	this.jobScriptDiv.innerHTML = "<pre><code>" + scr + "</code></pre>";
+	var pre = this.jobScriptDiv.querySelector("pre");
+	pre.querySelector("code").textContent = scr;
+
+	// Add copy button
+	document.getElementById('copyButton').addEventListener('click', () => {
+		var icon = document.querySelector('#copyButton i');
+		icon.classList.remove('fa-copy');
+		icon.classList.add('fa-check');
+		setTimeout(() => {
+				icon.classList.remove('fa-check');
+				icon.classList.add('fa-copy');
+		}, 1000);
+		navigator.clipboard.writeText(scr).then(() => {
+				console.log('Text copied to clipboard');
+		}).catch((err) => {
+				console.error('Could not copy text: ', err);
+		});
+	});
 };
+

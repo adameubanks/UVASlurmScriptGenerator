@@ -128,3 +128,19 @@ input[type="checkbox"] {
 .checkbox-label input[type="checkbox"] {
 	margin-right: 5px;
 }
+
+/* Style for buttons */
+button {
+	
+}
+#copyButton {
+	position: absolute;
+	right: 0;
+	transition: opacity 0.5s ease;
+	opacity: 1;
+	cursor: pointer;
+	transition: background-color 0.3s;
+  background-color: transparent;
+	border: 2px solid;
+	border-radius: 5px;
+}
