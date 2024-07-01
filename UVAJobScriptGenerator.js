@@ -2,22 +2,10 @@ var UVAScriptGen = function(div) {
 	this.values = {};
 	this.containerDiv = div;
 	this.inputs = {};
-	this.inputs.features = {};
-	this.formrows = [];
 	this.settings = {
-		script_formats : [ ["slurm", "Slurm"]],
-		defaults : {
-			email_address : "netid@virginia.edu",
-		},
-		ntasks : 1, 
-		features : {},
-		features_status : {},
 		gres: {},
-		gres_status: {}, 
 		partitions : {},
-		partitions_status : {},
 		constraint : {}, 
-		constraint_status: {}
 	};
 	return this;
 };
@@ -26,14 +14,10 @@ UVAScriptGen.prototype.newCheckbox = function(args) {
 	var tthis = this;
 	var newEl = document.createElement("input");
 	newEl.type = "checkbox";
-	var formrows = this.formrows;
 	if(args.checked)
 		newEl.checked = true;
 	if(args.toggle) {
 		newEl.onclick = newEl.onchange = function () {
-			if(formrows[args.toggle]) {
-				formrows[args.toggle].style.display = newEl.checked ? "" : "none";
-			}
 			tthis.updateJobscript();
 		};
 	}
@@ -57,6 +41,7 @@ UVAScriptGen.prototype.newRadio = function(args) {
 		newEl.value = args.value;
 	
 	newEl.onclick = newEl.onchange = function () {
+		updateVisibility();
 		tthis.updateJobscript();
 	};
 	return newEl;
@@ -126,24 +111,28 @@ UVAScriptGen.prototype.createForm = function(doc) {
 
 	// Job name
 	this.inputs.job_name = this.newInput({});
-	form.appendChild(this.createLabelInputPair("Job name: ", this.inputs.job_name));
+	form.appendChild(this.createLabelInputPair("Job name (optional): ", this.inputs.job_name));
 
-	//Number of tasks
-	this.inputs.num_tasks = this.newInput({type: "number"});
-	form.appendChild(this.createLabelInputPair("Number of tasks: ", this.inputs.num_tasks))
+	// Number of Nodes
+	this.inputs.num_nodes = this.newInput({type: "number", value: 1, min: 1});
+	form.appendChild(this.createLabelInputPair("Number of nodes: ", this.inputs.num_nodes));
 
-	// Number of processor cores across all nodes
-	this.inputs.num_cores = this.newInput({type: "number", value: 1});
-	form.appendChild(this.createLabelInputPair("Number of processor cores across all nodes: ", this.inputs.num_cores));
+	// Tasks per Node
+	this.inputs.tasks_per_node = this.newInput({type: "number", value: 1, min: 1});
+	form.appendChild(this.createLabelInputPair("Tasks per node: ", this.inputs.tasks_per_node));
 
-	// Number of GPUs
-	this.inputs.num_gpus = this.newInput({type: "number", value: 0, size: 4});
-	form.appendChild(this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus));
+	// Number of CPUs
+	this.inputs.cpus_per_task = this.newInput({type: "number", value: 1, min: 1});
+	form.appendChild(this.createLabelInputPair("CPUs (cores) per task: ", this.inputs.cpus_per_task));
 
 	// Memory per processor core
 	this.inputs.mem_per_core = this.newInput({type: "number", value: 1, size: 6});
 	this.inputs.mem_units = this.newSelect({options: [["GB", "GB"], ["MB", "MB"]]});
 	form.appendChild(this.createLabelInputPair("Total Memory: ", this.newSpan(null, this.inputs.mem_per_core, this.inputs.mem_units)));
+
+	// Number of GPUs
+	this.inputs.num_gpus = this.newInput({type: "number", value: 0, size: 4});
+	form.appendChild(this.createLabelInputPair("Number of GPUs: ", this.inputs.num_gpus));
 
 	// Partitions section
 	this.inputs.partitions = [];
@@ -165,10 +154,6 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		partition_container.appendChild(new_radio);
 		partition_container.appendChild(name_span);
 		partitions_span.appendChild(partition_container);
-
-		new_radio.addEventListener('change', function() {
-			updateVisibility();
-		});
 	}
 	form.appendChild(this.createLabelInputPair("Partitions: ", partitions_span));
 
@@ -194,10 +179,6 @@ UVAScriptGen.prototype.createForm = function(doc) {
 		gres_container.appendChild(new_radio);
 		gres_container.appendChild(name_span);
 		gres_span.appendChild(gres_container);
-
-		new_radio.addEventListener('change', function() {
-			updateVisibility();
-		});
 	}
 	form.appendChild(gres_label);
 
@@ -226,29 +207,18 @@ UVAScriptGen.prototype.createForm = function(doc) {
 	}
 	form.appendChild(constraint_label);
 
-
-	this.inputs.single_node = this.newCheckbox({checked: 1});
 	this.inputs.wallhours = this.newInput({value: "1", size: 3});
 	this.inputs.wallmins = this.newInput({value: "00", size: 2, maxLength: 2});
 	this.inputs.wallsecs = this.newInput({value: "00", size: 2, maxLength: 2});
-	this.inputs.is_requeueable = this.newCheckbox({checked: 1});
-	this.inputs.in_group = this.newCheckbox({checked: 0, toggle: "group_name"});
+	this.inputs.requeue = this.newCheckbox({checked: 1});
 	this.inputs.group_name = this.newInput({value: ""});
-	this.inputs.need_licenses = this.newCheckbox({checked: 0, toggle: "licenses"});
-	this.inputs.lic0_name = this.newInput({});
-	this.inputs.lic0_count = this.newInput({size: 3, maxLength: 4});
-	this.inputs.lic1_name = this.newInput({});
-	this.inputs.lic1_count = this.newInput({size: 3, maxLength: 4});
-	this.inputs.lic2_name = this.newInput({});
-	this.inputs.lic2_count = this.newInput({size: 3, maxLength: 4});
 	this.inputs.email_begin = this.newCheckbox({checked: 0});
 	this.inputs.email_end = this.newCheckbox({checked: 0});
 	this.inputs.email_abort = this.newCheckbox({checked: 0});
-	this.inputs.email_address = this.newInput({value: this.settings.defaults.email_address});
+	this.inputs.email_address = this.newInput({value: ""});
 
-	form.appendChild(this.createLabelInputPair("Limit this job to one node: ", this.inputs.single_node));
 	form.appendChild(this.createLabelInputPair("Walltime: ", this.newSpan(null, this.inputs.wallhours, " hours ", this.inputs.wallmins, " mins ", this.inputs.wallsecs, " secs")));
-	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.is_requeueable));
+	form.appendChild(this.createLabelInputPair("Job is requeueable: ", this.inputs.requeue));
 	form.appendChild(this.createLabelInputPair("Allocation name (case sensitive): ", this.inputs.group_name));
 	form.appendChild(this.createLabelInputPair("Receive email for job events: ", this.newSpan(null, this.inputs.email_begin, " begin ", this.inputs.email_end, " end ", this.inputs.email_abort, " abort")));
 	form.appendChild(this.createLabelInputPair("Email address: ", this.inputs.email_address));
@@ -270,18 +240,23 @@ function updateVisibility(event){
 	var gres = document.querySelectorAll(".uva_sg_input_gres_container input[type='radio']");
   var constraintSection = document.getElementById("Constraint");
   
-	var checkedGRES = Array.from(gres).find(radio => radio.checked).value;
+	var checkedGRESRadio = Array.from(gres).find(radio => radio.checked);
+  var checkedGRES = checkedGRESRadio ? checkedGRESRadio.value : null;
   var showConstraint = checkedGRES && checkedGRES === 'a100';
 
   constraintSection.style.display = (showConstraint && showGRES) ? 'block' : 'none';
 
-	if (!showConstraint || !showGRES) {
+	if (!showConstraint) {
 		var constraintRadios = document.querySelectorAll(".uva_sg_input_constraint_container input[type='radio']");
 		constraintRadios.forEach(radio => {
 			radio.checked = false;
 		});
 	}
-
+	if (!showGRES) {
+		gres.forEach(radio => {
+			radio.checked = false;
+		});
+	}
 }
 
 // Helper function to create label-input pair
@@ -312,50 +287,34 @@ UVAScriptGen.prototype.newSpan = function(id, ...children) {
 };
 
 UVAScriptGen.prototype.retrieveValues = function() {
-	var jobnotes = [];
 	this.values.MB_per_core = Math.round(this.inputs.mem_per_core.value * (this.inputs.mem_units.value =="GB" ? 1024 : 1));
-
-	this.values.features = [];
-	for(var i in this.inputs.features) {
-		if(this.inputs.features[i].checked){
-			this.values.features.push(this.inputs.features[i].feature_name);
-		} else {
-		}
-	}
 
 	this.values.partitions = [];
 	for(var i in this.inputs.partitions) {
 		if(this.inputs.partitions[i].checked){
 			this.values.partitions.push(this.inputs.partitions[i].partition_name);
-		} else {
 		}
 	}
 
-	// add gres
 	this.values.gres = [];
 	for(var i in this.inputs.gres) {
 		if(this.inputs.gres[i].checked){
 			this.values.gres.push(this.inputs.gres[i].gres_name);
-		} else {
 		}
 	}
 
-	//add constraint
 	this.values.constraint = [];
 	for(var i in this.inputs.constraint){
 		if(this.inputs.constraint[i].checked){
 			this.values.constraint.push(this.inputs.constraint[i].constraint_name);
-		}else{
-
 		}
 	}
 
-	this.values.is_requeueable = this.inputs.is_requeueable && this.inputs.is_requeueable.checked;
+	this.values.requeue = this.inputs.requeue && this.inputs.requeue.checked;
 	this.values.walltime_in_minutes = this.inputs.wallhours.value * 3600 + this.inputs.wallmins.value * 60;
-	this.values.num_tasks = this.inputs.num_tasks.value;
-	this.values.num_cores = this.inputs.num_cores.value;
-	if(this.inputs.single_node.checked)
-		this.values.nodes = 1;
+	this.values.num_nodes = this.inputs.num_nodes.value;
+	this.values.tasks_per_node = this.inputs.tasks_per_node.value;
+
 	this.values.gpus = this.inputs.num_gpus.value
 	this.values.job_name = this.inputs.job_name.value;
 	this.values.sendemail = {};
@@ -364,38 +323,27 @@ UVAScriptGen.prototype.retrieveValues = function() {
 	this.values.sendemail.abort = this.inputs.email_abort.checked;
 	this.values.email_address = this.inputs.email_address.value;
 
-	/* Add warnings, etc. to jobnotes array */
+	// Check values
 	if(this.values.MB_per_core > 20*1024*1024)
-		jobnotes.push("Are you crazy? That is way too much RAM!");
+		alert("Are you crazy? That is way too much RAM!");
 	if(this.values.walltime_in_minutes > 86400*7)
-		jobnotes.push("Global maximum walltime is 7 days");
-	if(this.values.walltime_in_minutes > 86400*3 && this.values.partitions.indexOf("p2") > -1)
-		jobnotes.push("Partition p2 maximum walltime is 3 days");
-	if(this.values.MB_per_core > 24*1024 && this.values.partitions.indexOf("p1") > -1)
-		jobnotes.push("Partition p1 nodes have 24 GB of RAM. You want more than that per core");
-
-	this.jobNotesDiv.innerHTML = jobnotes.join("<br/>\n");
+		alert("Global maximum walltime is 7 days");
 };
 
-
 UVAScriptGen.prototype.generateScriptSLURM = function () {
-	var features = "";
-
 	var scr = "#!/bin/bash\n\n#Submit this script with: sbatch thefilename\n\n";
 	var sbatch = function sbatch(txt) {
 		scr += "#SBATCH " + txt + "\n";
 	};
 	
 	sbatch("--time=" + this.inputs.wallhours.value + ":" + this.inputs.wallmins.value + ":" + this.inputs.wallsecs.value + "   # walltime");
-	sbatch("--ntasks=" + this.inputs.num_tasks.value + "    #number of tasks")
-	var procs;
-	sbatch("--ntasks-per-node=" + this.values.ntasks + "   # number of processor cores (i.e. tasks)");
-	if(this.inputs.single_node.checked) {
-		sbatch("--nodes=1   # number of nodes");
-	}
+
+	// Add SLURM directives for number of nodes and tasks per node
+	sbatch("--nodes="+this.inputs.num_nodes.value+"   # number of nodes");
+	sbatch("--ntasks-per-node="+this.inputs.tasks_per_node.value+"   # number of processor cores (i.e. tasks)");
+	sbatch("--cpus-per-task="+this.inputs.cpus_per_task.value+"   # number of CPU cores per task");
 
 	if(this.inputs.num_gpus.value > 0) {
-		console.log("check gres")
 		if(this.values.gres.length > 0) {
 			var gres = this.values.gres.join(",")
 			sbatch("--gres=gpu:" + gres + ":" + this.inputs.num_gpus.value)
@@ -412,10 +360,6 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 		}
 	}
 
-	if(this.values.features.length > 0) {
-		var features = this.values.features.join("&");
-		sbatch("-C '" + features + "'   # features syntax (use quotes): -C 'a&b&c&d'");
-	}
 	if(this.values.partitions.length > 0) {
 		var partitions = this.values.partitions.join(",");
 		sbatch("-p " + partitions + "   # partition(s)");
@@ -429,8 +373,6 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 	
 	if(this.inputs.email_begin.checked || this.inputs.email_end.checked || this.inputs.email_abort.checked) {
 		sbatch("--mail-user=" + this.values.email_address + "   # email address");
-		if(this.inputs.email_address.value == this.settings.defaults.email_address)
-			scr += "echo \"$USER: Please change the --mail-user option to your real email address before submitting. Then remove this line.\"; exit 1\n";
 		if(this.inputs.email_begin.checked)
 			sbatch("--mail-type=BEGIN");
 		if(this.inputs.email_end.checked)
@@ -439,39 +381,15 @@ UVAScriptGen.prototype.generateScriptSLURM = function () {
 			sbatch("--mail-type=FAIL");
 	}
 
-	if(this.inputs.is_requeueable.checked)
-		sbatch("--requeue   #requeue when preempted and on node failure");
-	if(this.inputs.need_licenses.checked) {
-		var lics = new Array();
-		var show_lics = 0;
-		if(this.inputs.lic0_name.value != "" && this.inputs.lic0_count.value > 0) {
-			lics.push(this.inputs.lic0_name.value + ":" + this.inputs.lic0_count.value);
-			show_lics = 1;
-		}
-		if(this.inputs.lic1_name.value != "" && this.inputs.lic1_count.value > 0) {
-			lics.push(this.inputs.lic1_name.value + ":" + this.inputs.lic1_count.value);
-			show_lics = 1;
-		}
-		if(this.inputs.lic2_name.value != "" && this.inputs.lic2_count.value > 0) {
-			lics.push(this.inputs.lic2_name.value + ":" + this.inputs.lic2_count.value);
-			show_lics = 1;
-		}
-		if(show_lics)
-			sbatch("--licenses=" + lics.join(",") + "   #format: lic1_name:lic1_count,lic2_name:lic2_count");
-	}
-	if(this.inputs.in_group.checked) {
+	if(!this.inputs.requeue.checked)
+		sbatch("--no-requeue   # prevents job returning to queue after node failure");
+	if(this.inputs.group_name.value != '') {
 		sbatch("--gid=" + this.inputs.group_name.value);
 	}
-
 
 	scr += "\n\n# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE\n";
 	return scr;
 };
-
-function stackTrace() {
-    var err = new Error();
-    return err.stack;
-}
 
 UVAScriptGen.prototype.updateJobscript = function() {
 	this.retrieveValues();
@@ -491,10 +409,6 @@ UVAScriptGen.prototype.init = function() {
 
 	this.form = this.createForm();
 	this.inputDiv.appendChild(this.form);
-
-	this.jobNotesDiv = document.createElement("div");
-	this.jobNotesDiv.id = "uva_sg_jobnotes";
-	this.containerDiv.appendChild(this.jobNotesDiv);
 
 	this.jobScriptDiv = document.createElement("div");
 	this.jobScriptDiv.id = "uva_sg_jobscript";
