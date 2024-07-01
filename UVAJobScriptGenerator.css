@@ -128,11 +128,6 @@ input[type="checkbox"] {
 .checkbox-label input[type="checkbox"] {
 	margin-right: 5px;
 }
-
-/* Style for buttons */
-button {
-	
-}
 #copyButton {
 	position: absolute;
 	right: 0;
