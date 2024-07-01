@@ -433,11 +433,7 @@ UVAScriptGen.prototype.toJobScript = function() {
 				icon.classList.remove('fa-check');
 				icon.classList.add('fa-copy');
 		}, 1000);
-		navigator.clipboard.writeText(scr).then(() => {
-				console.log('Text copied to clipboard');
-		}).catch((err) => {
-				console.error('Could not copy text: ', err);
-		});
+		navigator.clipboard.writeText(scr);
 	});
 };
 
